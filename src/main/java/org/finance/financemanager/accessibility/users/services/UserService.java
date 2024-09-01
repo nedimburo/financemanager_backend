@@ -12,14 +12,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.roles.entities.RoleEntity;
 import org.finance.financemanager.accessibility.roles.entities.RoleName;
 import org.finance.financemanager.accessibility.roles.services.RoleService;
-import org.finance.financemanager.accessibility.users.RegistrationRequestDto;
+import org.finance.financemanager.accessibility.users.payloads.RegistrationRequestDto;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
+import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
+import org.finance.financemanager.common.config.Auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.finance.financemanager.accessibility.roles.entities.RoleName.CLIENT;
 
@@ -64,6 +67,26 @@ public class UserService {
             throw new RuntimeException("Authorization header missing or doesn't contain Bearer token");
         }
         return new ResponseEntity<>("User has been successfully registered.", HttpStatus.OK);
+    }
+
+    @Transactional
+    @SneakyThrows
+    public ResponseEntity<UserProfileResponseDto> getUserProfile() {
+        String uid = Auth.getUserId();
+        UserEntity user = getUser(uid);
+        UserProfileResponseDto profileResponse = new UserProfileResponseDto();
+        profileResponse.setUserId(user.getId());
+        profileResponse.setEmail(user.getEmail());
+        profileResponse.setFirstName(user.getFirstName());
+        profileResponse.setLastName(user.getLastName());
+        profileResponse.setRole(user.getRole().getName());
+        profileResponse.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+        return ResponseEntity.ok(profileResponse);
+    }
+
+    public String formatedCreatedDate(LocalDateTime date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd.yyyy.");
+        return date.format(formatter);
     }
 
     public UserEntity getUser(String userId) {

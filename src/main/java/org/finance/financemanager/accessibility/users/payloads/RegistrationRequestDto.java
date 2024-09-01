@@ -1,4 +1,4 @@
-package org.finance.financemanager.accessibility.users;
+package org.finance.financemanager.accessibility.users.payloads;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
