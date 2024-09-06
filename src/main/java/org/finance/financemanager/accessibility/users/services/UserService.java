@@ -14,6 +14,7 @@ import org.finance.financemanager.accessibility.roles.entities.RoleName;
 import org.finance.financemanager.accessibility.roles.services.RoleService;
 import org.finance.financemanager.accessibility.users.payloads.RegistrationRequestDto;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
+import org.finance.financemanager.accessibility.users.payloads.RegistrationResponseDto;
 import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
@@ -42,13 +43,12 @@ public class UserService {
         return role.getName();
     }
 
-
     @Transactional
     @SneakyThrows
-    public ResponseEntity<?> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
+    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
+        String tokenHeader = request.getHeader("Token");
+        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            String token = tokenHeader.substring(7);
             try {
                 FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
                 UserEntity newUser = new UserEntity();
@@ -60,13 +60,21 @@ public class UserService {
                 newUser.setCreated(LocalDateTime.now());
                 newUser.setUpdated(LocalDateTime.now());
                 repository.save(newUser);
+
+                RegistrationResponseDto response = new RegistrationResponseDto();
+                response.setEmail(newUser.getEmail());
+                response.setFirstName(newUser.getFirstName());
+                response.setLastName(newUser.getLastName());
+                response.setRole(newUser.getRole().getName());
+                response.setRegistrationDate(newUser.getCreated().toString());
+                response.setMessage("User has been successfully registered.");
+                return ResponseEntity.ok(response);
             } catch (Exception e) {
                 throw new RuntimeException("Invalid or expired token", e);
             }
         } else {
-            throw new RuntimeException("Authorization header missing or doesn't contain Bearer token");
+            throw new RuntimeException("Token header missing or doesn't contain Bearer token");
         }
-        return new ResponseEntity<>("User has been successfully registered.", HttpStatus.OK);
     }
 
     @Transactional

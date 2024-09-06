@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.payloads.RegistrationRequestDto;
+import org.finance.financemanager.accessibility.users.payloads.RegistrationResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class PublicUserController {
     private final UserService service;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(HttpServletRequest request, @RequestBody @Valid RegistrationRequestDto registrationRequest) {
+    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, @RequestBody @Valid RegistrationRequestDto registrationRequest) {
         return service.register(request, registrationRequest);
     }
 }
