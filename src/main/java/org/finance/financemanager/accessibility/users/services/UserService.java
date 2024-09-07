@@ -92,12 +92,12 @@ public class UserService {
         return ResponseEntity.ok(profileResponse);
     }
 
-    public String formatedCreatedDate(LocalDateTime date) {
+    private String formatedCreatedDate(LocalDateTime date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd.yyyy.");
         return date.format(formatter);
     }
 
-    public UserEntity getUser(String userId) {
+    private UserEntity getUser(String userId) {
         return repository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
     }

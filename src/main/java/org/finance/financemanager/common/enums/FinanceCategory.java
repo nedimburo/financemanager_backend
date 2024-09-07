@@ -1,0 +1,35 @@
+package org.finance.financemanager.common.enums;
+
+public enum FinanceCategory {
+    // EXPENSES
+    GROCERIES,
+    RENT,
+    UTILITIES,
+    TRANSPORTATION,
+    ENTERTAINMENT,
+    CLOTHING,
+    HEALTH,
+    INSURANCE,
+    EDUCATION,
+    SUBSCRIPTION,
+    INVESTMENT,
+    SHOPPING,
+    PERSONAL_CARE,
+    TRAVEL,
+    CHILDCARE,
+    PETS,
+    HOME_MAINTENANCE,
+    GIFT,
+    TAX,
+    // INCOME
+    SALARY,
+    BUSINESS_INCOME,
+    FREELANCE,
+    INVESTMENT_INCOME,
+    RENTAL_INCOME,
+    BENEFIT,
+    TAX_REFUND,
+    PENSION,
+    SCHOLARSHIP,
+    MISCELLANEOUS,
+}
