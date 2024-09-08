@@ -7,11 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
+import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.payloads.DeleteResponseDto;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
-import org.finance.financemanager.transactions.payloads.TransactionDeleteResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
@@ -22,6 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static org.finance.financemanager.common.enums.FinanceCategory.UTILITIES;
+import static org.finance.financemanager.transactions.entities.TransactionType.EXPENSE;
 
 @Slf4j
 @Getter
@@ -111,13 +115,13 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<TransactionDeleteResponseDto> deleteTransaction(String transactionId) {
+    public ResponseEntity<DeleteResponseDto> deleteTransaction(String transactionId) {
         try {
             TransactionEntity transaction = getTransaction(transactionId);
             repository.delete(transaction);
 
-            TransactionDeleteResponseDto response = new TransactionDeleteResponseDto();
-            response.setTransactionId(transactionId);
+            DeleteResponseDto response = new DeleteResponseDto();
+            response.setId(transactionId);
             response.setMessage("Transaction has been successfully deleted");
             response.setRemovedDate(LocalDateTime.now().toString());
             return ResponseEntity.ok(response);
@@ -137,6 +141,24 @@ public class TransactionService {
         response.setDate(transaction.getDate().toString());
         response.setCreatedDate(transaction.getCreated().toString());
         return response;
+    }
+
+    public void createTransactionFromBillReminder(BillReminderEntity billReminder) {
+        try {
+            TransactionEntity newTransaction = new TransactionEntity();
+            newTransaction.setId(billReminder.getId());
+            newTransaction.setType(EXPENSE);
+            newTransaction.setCategory(UTILITIES);
+            newTransaction.setAmount(billReminder.getAmount());
+            newTransaction.setDate(billReminder.getReceivedDate());
+            newTransaction.setDescription(billReminder.getBillName());
+            newTransaction.setCreated(LocalDateTime.now());
+            newTransaction.setUpdated(LocalDateTime.now());
+            newTransaction.setUser(billReminder.getUser());
+            repository.save(newTransaction);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating bill reminder transaction: ", e);
+        }
     }
 
     public TransactionEntity getTransaction(String transactionId) {

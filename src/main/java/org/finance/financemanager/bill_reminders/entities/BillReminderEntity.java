@@ -37,6 +37,9 @@ public class BillReminderEntity implements BillReminder {
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
+    @Column(name = "is_paid")
+    private Boolean isPaid;
+
     @Column(name = "created")
     private LocalDateTime created;
 

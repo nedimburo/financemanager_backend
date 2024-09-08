@@ -1,4 +1,4 @@
-package org.finance.financemanager.transactions.payloads;
+package org.finance.financemanager.common.payloads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransactionDeleteResponseDto {
-    private String transactionId;
+public class DeleteResponseDto {
+    private String id;
     private String message;
     private String removedDate;
 }
