@@ -97,7 +97,7 @@ public class UserService {
         return date.format(formatter);
     }
 
-    private UserEntity getUser(String userId) {
+    public UserEntity getUser(String userId) {
         return repository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
     }
