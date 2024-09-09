@@ -34,7 +34,7 @@ public class SavingEntity implements Saving {
     @Column(name = "current_amount")
     private BigDecimal currentAmount;
 
-    @Column(name = "startDate")
+    @Column(name = "start_date")
     private LocalDateTime startDate;
 
     @Column(name = "target_date")

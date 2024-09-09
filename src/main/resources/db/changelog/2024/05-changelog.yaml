@@ -1,0 +1,19 @@
+databaseChangeLog:
+- changeSet:
+    id: 1725920078062-1
+    author: nedim.buro (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: start_date
+            type: timestamp(6)
+        tableName: savings
+- changeSet:
+    id: 1725920078062-2
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: startDate
+        tableName: savings
+
