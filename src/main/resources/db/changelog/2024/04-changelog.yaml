@@ -1,0 +1,22 @@
+databaseChangeLog:
+- changeSet:
+    id: 1725918278980-1
+    author: nedim.buro (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: budget_limit
+            type: numeric(38, 2)
+        tableName: budgets
+- changeSet:
+    id: 1725918278980-2
+    author: nedim.buro (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: budget_name
+            type: varchar(255)
+        tableName: budgets
+

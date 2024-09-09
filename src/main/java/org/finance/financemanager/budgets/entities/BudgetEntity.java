@@ -26,12 +26,15 @@ public class BudgetEntity implements Budget {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
+    @Column(name = "budget_name")
+    private String budgetName;
+
     @Column(name = "category")
     @Enumerated(EnumType.STRING)
     private FinanceCategory category;
 
-    @Column(name = "limit")
-    private BigDecimal limit;
+    @Column(name = "budget_limit")
+    private BigDecimal budgetLimit;
 
     @Column(name = "start_date")
     private LocalDateTime startDate;
