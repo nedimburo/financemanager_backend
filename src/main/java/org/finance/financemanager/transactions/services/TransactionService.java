@@ -11,6 +11,7 @@ import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.finance.financemanager.common.enums.FinanceCategory.INVESTMENT;
 import static org.finance.financemanager.common.enums.FinanceCategory.UTILITIES;
 import static org.finance.financemanager.transactions.entities.TransactionType.EXPENSE;
 
@@ -158,6 +160,24 @@ public class TransactionService {
             repository.save(newTransaction);
         } catch (Exception e) {
             throw new RuntimeException("Error creating bill reminder transaction: ", e);
+        }
+    }
+
+    public void createTransactionFromInvestment(InvestmentEntity investment) {
+        try {
+            TransactionEntity newTransaction = new TransactionEntity();
+            newTransaction.setId(investment.getId());
+            newTransaction.setType(EXPENSE);
+            newTransaction.setCategory(INVESTMENT);
+            newTransaction.setAmount(investment.getAmountInvested());
+            newTransaction.setDate(investment.getStartDate());
+            newTransaction.setDescription(investment.getInvestmentName());
+            newTransaction.setCreated(LocalDateTime.now());
+            newTransaction.setUpdated(LocalDateTime.now());
+            newTransaction.setUser(investment.getUser());
+            repository.save(newTransaction);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating investment transaction: ", e);
         }
     }
 
