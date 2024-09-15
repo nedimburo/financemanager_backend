@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.accessibility.users.payloads.FinanceOverviewResponseDto;
 import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +28,10 @@ public class CommonUserController {
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> getUserProfile() {
         return service.getUserProfile();
+    }
+
+    @GetMapping("/financial-overview-numbers")
+    public ResponseEntity<FinanceOverviewResponseDto> getFinancialOverviewNumbers() {
+        return service.getFinancialOverviewNumbers();
     }
 }

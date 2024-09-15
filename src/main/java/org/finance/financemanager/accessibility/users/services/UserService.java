@@ -16,11 +16,8 @@ import org.finance.financemanager.accessibility.auth.services.FirebaseAuthServic
 import org.finance.financemanager.accessibility.roles.entities.RoleEntity;
 import org.finance.financemanager.accessibility.roles.entities.RoleName;
 import org.finance.financemanager.accessibility.roles.services.RoleService;
-import org.finance.financemanager.accessibility.users.payloads.RegistrationRequestDto;
+import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
-import org.finance.financemanager.accessibility.users.payloads.RegistrationResponseDto;
-import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
-import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
@@ -212,6 +209,24 @@ public class UserService {
         response.setMessage("User has been deleted successfully.");
         response.setRemovedDate(LocalDateTime.now().toString());
         return ResponseEntity.ok(response);
+    }
+
+    @Transactional
+    public ResponseEntity<FinanceOverviewResponseDto> getFinancialOverviewNumbers(){
+        try {
+            String uid = Auth.getUserId();
+            UserEntity user = getUser(uid);
+            FinanceOverviewResponseDto response = new FinanceOverviewResponseDto();
+            response.setUserId(user.getId());
+            response.setNoOfTransactions(user.getTransactions().size());
+            response.setNoOfBillReminders(user.getBillReminders().size());
+            response.setNoOfSavings(user.getSavings().size());
+            response.setNoOfInvestments(user.getInvestments().size());
+            response.setNoOfBudgets(user.getBudgets().size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("User not found by the provided uid", e);
+        }
     }
 
     private String formatedCreatedDate(LocalDateTime date) {
