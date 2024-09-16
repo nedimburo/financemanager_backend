@@ -60,6 +60,27 @@ public class TransactionService {
     }
 
     @Transactional
+    public Page<TransactionResponseDto> searchUsersTransactions(String description, Pageable pageable) {
+        try {
+            String uid = Auth.getUserId();
+            return repository.findAllByUserIdAndDescriptionContainingIgnoreCase(uid, description, pageable)
+                    .map(transaction -> new TransactionResponseDto(
+                            transaction.getId(),
+                            transaction.getUser().getId(),
+                            transaction.getType().toString(),
+                            transaction.getCategory().toString(),
+                            transaction.getAmount(),
+                            transaction.getDescription(),
+                            transaction.getDate().toString(),
+                            null,
+                            transaction.getCreated().toString()
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users transactions: ", e);
+        }
+    }
+
+    @Transactional
     public ResponseEntity<TransactionResponseDto> getTransactionById(String transactionId) {
         try {
             TransactionEntity transaction = getTransaction(transactionId);

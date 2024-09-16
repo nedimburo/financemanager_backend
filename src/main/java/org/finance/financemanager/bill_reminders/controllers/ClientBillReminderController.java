@@ -36,6 +36,16 @@ public class ClientBillReminderController {
         return service.getUsersBillReminders(pageable);
     }
 
+    @GetMapping("/search")
+    public Page<BillReminderResponseDto> searchUsersBillReminders(
+            @RequestParam String billName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size);
+        return service.searchUsersBillReminders(billName, pageable);
+    }
+
     @GetMapping("/{billReminderId}")
     public ResponseEntity<BillReminderResponseDto> getBillReminderById(@PathVariable String billReminderId) {
         return service.getBillReminderById(billReminderId);

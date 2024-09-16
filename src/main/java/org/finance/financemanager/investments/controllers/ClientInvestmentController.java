@@ -36,6 +36,16 @@ public class ClientInvestmentController {
         return service.getUsersInvestments(pageable);
     }
 
+    @GetMapping("/search")
+    public Page<InvestmentResponseDto> searchUsersInvestments(
+            @RequestParam String investmentName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size);
+        return service.searchUsersInvestments(investmentName, pageable);
+    }
+
     @GetMapping("/{investmentId}")
     public ResponseEntity<InvestmentResponseDto> getInvestmentById(@PathVariable String investmentId) {
         return service.getInvestmentById(investmentId);

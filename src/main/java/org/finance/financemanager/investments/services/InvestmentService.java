@@ -56,6 +56,28 @@ public class InvestmentService {
     }
 
     @Transactional
+    public Page<InvestmentResponseDto> searchUsersInvestments(String investmentName, Pageable pageable){
+        try {
+            String uid = Auth.getUserId();
+            return repository.findAllByUserIdAndInvestmentNameContainingIgnoreCase(uid, investmentName, pageable)
+                    .map(investment -> new InvestmentResponseDto(
+                            investment.getId(),
+                            investment.getUser().getId(),
+                            investment.getType().toString(),
+                            investment.getInvestmentName(),
+                            investment.getAmountInvested(),
+                            investment.getCurrentValue(),
+                            investment.getInterestRate(),
+                            investment.getStartDate().toString(),
+                            null,
+                            investment.getCreated().toString()
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users investments: ", e);
+        }
+    }
+
+    @Transactional
     public ResponseEntity<InvestmentResponseDto> getInvestmentById(String investmentId) {
         try {
             InvestmentEntity investment = getInvestment(investmentId);

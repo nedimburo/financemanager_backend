@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SavingRepository extends JpaRepository<SavingEntity, String> {
     Page<SavingEntity> findAllByUserId(String userId, Pageable pageable);
+    Page<SavingEntity> findAllByUserIdAndGoalNameContainingIgnoreCase(String userId, String goalName, Pageable pageable);
 }

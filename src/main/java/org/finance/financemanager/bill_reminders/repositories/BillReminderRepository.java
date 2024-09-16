@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BillReminderRepository extends JpaRepository<BillReminderEntity, String> {
     Page<BillReminderEntity> findAllByUserId(String userId, Pageable pageable);
+    Page<BillReminderEntity> findAllByUserIdAndBillNameContainingIgnoreCase(String userId, String billName, Pageable pageable);
 }

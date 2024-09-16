@@ -36,6 +36,16 @@ public class ClientSavingController {
         return service.getUsersSavings(pageable);
     }
 
+    @GetMapping("/search")
+    public Page<SavingResponseDto> searchUsersSavings(
+            @RequestParam String goalName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size);
+        return service.searchUsersSavings(goalName, pageable);
+    }
+
     @GetMapping("/{savingId}")
     public ResponseEntity<SavingResponseDto> getSavingById(@PathVariable String savingId) {
         return service.getSavingById(savingId);

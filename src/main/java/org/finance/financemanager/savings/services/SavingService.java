@@ -52,6 +52,27 @@ public class SavingService {
     }
 
     @Transactional
+    public Page<SavingResponseDto> searchUsersSavings(String goalName, Pageable pageable) {
+        try {
+            String uid = Auth.getUserId();
+            return repository.findAllByUserIdAndGoalNameContainingIgnoreCase(uid, goalName, pageable)
+                    .map(saving -> new SavingResponseDto(
+                            saving.getId(),
+                            saving.getUser().getId(),
+                            saving.getGoalName(),
+                            saving.getTargetAmount(),
+                            saving.getCurrentAmount(),
+                            saving.getStartDate(),
+                            saving.getTargetDate(),
+                            null,
+                            saving.getCreated().toString()
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users savings: ", e);
+        }
+    }
+
+    @Transactional
     public ResponseEntity<SavingResponseDto> getSavingById(String savingId) {
         try {
             SavingEntity saving = getSaving(savingId);

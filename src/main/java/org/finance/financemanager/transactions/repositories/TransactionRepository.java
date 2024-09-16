@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
     Page<TransactionEntity> findAllByUserId(String userId, Pageable pageable);
+    Page<TransactionEntity> findAllByUserIdAndDescriptionContainingIgnoreCase(String userId, String description, Pageable pageable);
 }

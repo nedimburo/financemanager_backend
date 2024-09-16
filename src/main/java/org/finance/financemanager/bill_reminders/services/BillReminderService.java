@@ -54,6 +54,27 @@ public class BillReminderService {
     }
 
     @Transactional
+    public Page<BillReminderResponseDto> searchUsersBillReminders(String billName, Pageable pageable){
+        try {
+            String uid = Auth.getUserId();
+            return repository.findAllByUserIdAndBillNameContainingIgnoreCase(uid, billName, pageable)
+                    .map(billReminder -> new BillReminderResponseDto(
+                            billReminder.getId(),
+                            billReminder.getUser().getId(),
+                            billReminder.getBillName(),
+                            billReminder.getAmount(),
+                            billReminder.getReceivedDate().toString(),
+                            billReminder.getDueDate().toString(),
+                            billReminder.getIsPaid(),
+                            null,
+                            billReminder.getCreated().toString()
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users bill reminders: ", e);
+        }
+    }
+
+    @Transactional
     public ResponseEntity<BillReminderResponseDto> getBillReminderById(String billReminderId) {
         try {
             BillReminderEntity billReminder = getBillReminder(billReminderId);

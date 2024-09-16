@@ -53,6 +53,27 @@ public class BudgetService {
     }
 
     @Transactional
+    public Page<BudgetResponseDto> searchUsersBudgets(String budgetName, Pageable pageable){
+        try {
+            String uid = Auth.getUserId();
+            return repository.findAllByUserIdAndBudgetNameIsContainingIgnoreCase(uid, budgetName, pageable)
+                    .map(budget -> new BudgetResponseDto(
+                            budget.getId(),
+                            budget.getUser().getId(),
+                            budget.getBudgetName(),
+                            budget.getCategory().toString(),
+                            budget.getBudgetLimit(),
+                            budget.getStartDate().toString(),
+                            budget.getEndDate().toString(),
+                            null,
+                            budget.getCreated().toString()
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users budgets: ", e);
+        }
+    }
+
+    @Transactional
     public ResponseEntity<BudgetResponseDto> getBudgetById(String budgetId) {
         try {
             BudgetEntity budget = getBudget(budgetId);

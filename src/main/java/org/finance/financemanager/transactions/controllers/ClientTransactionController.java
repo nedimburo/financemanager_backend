@@ -36,6 +36,16 @@ public class ClientTransactionController {
         return service.getUsersTransactions(pageable);
     }
 
+    @GetMapping("/search")
+    public Page<TransactionResponseDto> searchUsersTransactions(
+            @RequestParam String description,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size);
+        return service.searchUsersTransactions(description, pageable);
+    }
+
     @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionResponseDto> getTransactionById(@PathVariable String transactionId) {
         return service.getTransactionById(transactionId);

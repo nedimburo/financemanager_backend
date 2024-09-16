@@ -36,6 +36,16 @@ public class ClientBudgetController {
         return service.getUsersBudgets(pageable);
     }
 
+    @GetMapping("/search")
+    public Page<BudgetResponseDto> searchUsersBudget(
+            @RequestParam String budgetName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page, size);
+        return service.searchUsersBudgets(budgetName, pageable);
+    }
+
     @GetMapping("/{budgetId}")
     public ResponseEntity<BudgetResponseDto> getBudgetById(@PathVariable String budgetId) {
         return service.getBudgetById(budgetId);

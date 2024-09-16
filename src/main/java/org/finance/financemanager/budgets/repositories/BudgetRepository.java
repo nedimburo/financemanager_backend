@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BudgetRepository extends JpaRepository<BudgetEntity, String> {
     Page<BudgetEntity> findAllByUserId(String userId, Pageable pageable);
+    Page<BudgetEntity> findAllByUserIdAndBudgetNameIsContainingIgnoreCase(String userId, String budgetName, Pageable pageable);
 }
