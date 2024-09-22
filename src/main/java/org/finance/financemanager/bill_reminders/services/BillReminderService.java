@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -169,7 +170,7 @@ public class BillReminderService {
         response.setBillReminderId(billReminder.getId());
         response.setUserId(billReminder.getUser().getId());
         response.setBillName(billReminder.getBillName());
-        response.setAmount(billReminder.getAmount());
+        response.setAmount(billReminder.getAmount() != null ? billReminder.getAmount() : BigDecimal.ZERO);
         response.setReceivedDate(billReminder.getReceivedDate().toString());
         response.setDueDate(billReminder.getDueDate().toString());
         response.setIsPaid(billReminder.getIsPaid());

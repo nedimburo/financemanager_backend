@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -152,7 +153,7 @@ public class BudgetService {
         response.setUserId(budget.getUser().getId());
         response.setBudgetName(budget.getBudgetName());
         response.setCategory(budget.getCategory().toString());
-        response.setBudgetLimit(budget.getBudgetLimit());
+        response.setBudgetLimit(budget.getBudgetLimit() != null ? budget.getBudgetLimit() : BigDecimal.ZERO);
         response.setStartDate(budget.getStartDate().toString());
         response.setEndDate(budget.getEndDate().toString());
         response.setCreatedDate(budget.getCreated().toString());

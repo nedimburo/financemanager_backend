@@ -84,33 +84,39 @@ public class UserService {
     }
 
     @Transactional
-    @SneakyThrows
     public ResponseEntity<UserProfileResponseDto> getUserProfile() {
-        String uid = Auth.getUserId();
-        UserEntity user = getUser(uid);
-        UserProfileResponseDto profileResponse = new UserProfileResponseDto();
-        profileResponse.setUserId(user.getId());
-        profileResponse.setEmail(user.getEmail());
-        profileResponse.setFirstName(user.getFirstName());
-        profileResponse.setLastName(user.getLastName());
-        profileResponse.setRole(user.getRole().getName());
-        profileResponse.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-        return ResponseEntity.ok(profileResponse);
+        try {
+            String uid = Auth.getUserId();
+            UserEntity user = getUser(uid);
+            UserProfileResponseDto profileResponse = new UserProfileResponseDto();
+            profileResponse.setUserId(user.getId());
+            profileResponse.setEmail(user.getEmail());
+            profileResponse.setFirstName(user.getFirstName());
+            profileResponse.setLastName(user.getLastName());
+            profileResponse.setRole(user.getRole().getName());
+            profileResponse.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.ok(profileResponse);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while getting user profile data: ", e);
+        }
     }
 
     @Transactional
-    @SneakyThrows
     public ResponseEntity<UserResponseDto> getUserById(String userId) {
-        UserEntity user = getUser(userId);
-        UserResponseDto response = new UserResponseDto();
-        response.setUserId(user.getId());
-        response.setEmail(user.getEmail());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setRole(user.getRole().getName());
-        response.setNumberOfTransactions(user.getTransactions().size());
-        response.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-        return ResponseEntity.ok(response);
+        try {
+            UserEntity user = getUser(userId);
+            UserResponseDto response = new UserResponseDto();
+            response.setUserId(user.getId());
+            response.setEmail(user.getEmail());
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
+            response.setRole(user.getRole().getName());
+            response.setNumberOfTransactions(user.getTransactions().size());
+            response.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while getting user: ", e);
+        }
     }
 
     @Transactional
@@ -199,16 +205,19 @@ public class UserService {
     }
 
     @Transactional
-    @SneakyThrows
     public ResponseEntity<DeleteResponseDto> deleteUser(String userId) {
-        UserEntity user = getUser(userId);
-        firebaseAuthService.deleteUser(user.getId());
-        repository.deleteById(user.getId());
-        DeleteResponseDto response = new DeleteResponseDto();
-        response.setId(userId);
-        response.setMessage("User has been deleted successfully.");
-        response.setRemovedDate(LocalDateTime.now().toString());
-        return ResponseEntity.ok(response);
+        try {
+            UserEntity user = getUser(userId);
+            firebaseAuthService.deleteUser(user.getId());
+            repository.deleteById(user.getId());
+            DeleteResponseDto response = new DeleteResponseDto();
+            response.setId(userId);
+            response.setMessage("User has been deleted successfully.");
+            response.setRemovedDate(LocalDateTime.now().toString());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while deleting user: ", e);
+        }
     }
 
     @Transactional

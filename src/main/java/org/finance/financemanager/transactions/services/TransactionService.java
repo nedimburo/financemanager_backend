@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -159,7 +160,7 @@ public class TransactionService {
         response.setUserId(transaction.getUser().getId());
         response.setType(transaction.getType().toString());
         response.setCategory(transaction.getCategory().toString());
-        response.setAmount(transaction.getAmount());
+        response.setAmount(transaction.getAmount() != null ? transaction.getAmount() : BigDecimal.ZERO);
         response.setDescription(transaction.getDescription());
         response.setDate(transaction.getDate().toString());
         response.setCreatedDate(transaction.getCreated().toString());

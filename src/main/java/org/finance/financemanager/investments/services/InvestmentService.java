@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -160,9 +161,9 @@ public class InvestmentService {
         response.setUserId(investment.getUser().getId());
         response.setType(investment.getType().toString());
         response.setInvestmentName(investment.getInvestmentName());
-        response.setAmountInvested(investment.getAmountInvested());
-        response.setCurrentValue(investment.getCurrentValue());
-        response.setInterestRate(investment.getInterestRate());
+        response.setAmountInvested(investment.getAmountInvested() != null ? investment.getAmountInvested() : BigDecimal.ZERO);
+        response.setCurrentValue(investment.getCurrentValue() != null ? investment.getCurrentValue() : BigDecimal.ZERO);
+        response.setInterestRate(investment.getInterestRate() != null ? investment.getInterestRate() : 0);
         response.setStartDate(investment.getStartDate().toString());
         response.setCreatedDate(investment.getCreated().toString());
         return response;

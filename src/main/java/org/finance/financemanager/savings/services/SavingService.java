@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -150,8 +151,8 @@ public class SavingService {
         response.setSavingId(saving.getId());
         response.setUserId(saving.getUser().getId());
         response.setGoalName(saving.getGoalName());
-        response.setTargetAmount(saving.getTargetAmount());
-        response.setCurrentAmount(saving.getCurrentAmount());
+        response.setTargetAmount(saving.getTargetAmount() != null ? saving.getTargetAmount() : BigDecimal.ZERO);
+        response.setCurrentAmount(saving.getCurrentAmount() != null ? saving.getCurrentAmount() : BigDecimal.ZERO);
         response.setStartDate(saving.getStartDate());
         response.setTargetDate(saving.getTargetDate());
         response.setCreatedDate(saving.getCreated().toString());
