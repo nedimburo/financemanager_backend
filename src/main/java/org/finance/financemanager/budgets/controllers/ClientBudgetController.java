@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.services.BudgetService;
@@ -64,5 +65,10 @@ public class ClientBudgetController {
     @DeleteMapping("/{budgetId}")
     public ResponseEntity<DeleteResponseDto> deleteBudget(@PathVariable String budgetId) {
         return service.deleteBudget(budgetId);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<BudgetDetailsResponseDto> getBudgetDetails() {
+        return service.getBudgetDetails();
     }
 }

@@ -10,6 +10,7 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
 import org.finance.financemanager.savings.entities.SavingEntity;
+import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
@@ -143,6 +144,25 @@ public class SavingService {
             return ResponseEntity.ok(response);
         } catch (Exception e){
             throw new RuntimeException("Error deleting saving: " + savingId, e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<SavingDetailsResponseDto> getSavingDetails() {
+        try {
+            String uid = Auth.getUserId();
+            SavingEntity closestSaving = repository.findSavingWithSmallestDifferenceByUserId(uid);
+            SavingEntity furthestSaving = repository.findSavingWithBiggestDifferenceByUserId(uid);
+            SavingDetailsResponseDto response = new SavingDetailsResponseDto();
+            response.setClosestSavingGoalName(closestSaving != null ? closestSaving.getGoalName() : "N/A");
+            response.setClosestSavingCurrentAmount(closestSaving != null ? closestSaving.getCurrentAmount() : BigDecimal.ZERO);
+            response.setClosestSavingTargetAmount(closestSaving != null ? closestSaving.getTargetAmount() : BigDecimal.ZERO);
+            response.setFurthestSavingGoalName(furthestSaving != null ? furthestSaving.getGoalName() : "N/A");
+            response.setFurthestSavingCurrentAmount(furthestSaving != null ? furthestSaving.getCurrentAmount() : BigDecimal.ZERO);
+            response.setFurthestSavingTargetAmount(furthestSaving != null ? furthestSaving.getTargetAmount() : BigDecimal.ZERO);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while getting savings details: ", e);
         }
     }
 

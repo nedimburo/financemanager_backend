@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.services.SavingService;
@@ -64,5 +65,10 @@ public class ClientSavingController {
     @DeleteMapping("/{savingId}")
     public ResponseEntity<DeleteResponseDto> deleteSaving(@PathVariable String savingId) {
         return service.deleteSaving(savingId);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<SavingDetailsResponseDto> getSavingDetails() {
+        return service.getSavingDetails();
     }
 }

@@ -4,8 +4,18 @@ import org.finance.financemanager.savings.entities.SavingEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface SavingRepository extends JpaRepository<SavingEntity, String> {
     Page<SavingEntity> findAllByUserId(String userId, Pageable pageable);
     Page<SavingEntity> findAllByUserIdAndGoalNameContainingIgnoreCase(String userId, String goalName, Pageable pageable);
+    @Query("SELECT s FROM SavingEntity s WHERE s.user.id = :userId AND " +
+            "(s.targetAmount - s.currentAmount) = " +
+            "(SELECT MIN(s2.targetAmount - s2.currentAmount) FROM SavingEntity s2 WHERE s2.user.id = :userId)")
+    SavingEntity findSavingWithSmallestDifferenceByUserId(@Param("userId") String userId);
+    @Query("SELECT s FROM SavingEntity s WHERE s.user.id = :userId AND " +
+            "(s.targetAmount - s.currentAmount) = " +
+            "(SELECT MAX(s2.targetAmount - s2.currentAmount) FROM SavingEntity s2 WHERE s2.user.id = :userId)")
+    SavingEntity findSavingWithBiggestDifferenceByUserId(@Param("userId") String userId);
 }

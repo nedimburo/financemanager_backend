@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.budgets.entities.BudgetEntity;
+import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.repositories.BudgetRepository;
@@ -144,6 +145,23 @@ public class BudgetService {
             return ResponseEntity.ok(response);
         } catch (Exception e){
             throw new RuntimeException("Error deleting budget: " + budgetId, e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<BudgetDetailsResponseDto> getBudgetDetails() {
+        try {
+            String uid = Auth.getUserId();
+            BudgetEntity biggestBudget = repository.findBiggestBudgetByUserId(uid);
+            BudgetEntity lowestBudget = repository.findLowestBudgetByUserId(uid);
+            BudgetDetailsResponseDto response = new BudgetDetailsResponseDto();
+            response.setBiggestBudgetName(biggestBudget != null ? biggestBudget.getBudgetName() : "N/A");
+            response.setBiggestBudgetAmount(biggestBudget != null ? biggestBudget.getBudgetLimit() : BigDecimal.ZERO);
+            response.setLowestBudgetName(lowestBudget != null ? lowestBudget.getBudgetName() : "N/A");
+            response.setLowestBudgetAmount(lowestBudget != null ? lowestBudget.getBudgetLimit() : BigDecimal.ZERO);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while getting budget details");
         }
     }
 
