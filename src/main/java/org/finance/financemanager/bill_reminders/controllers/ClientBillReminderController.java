@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.services.BillReminderService;
@@ -69,5 +70,10 @@ public class ClientBillReminderController {
     @DeleteMapping("/{billReminderId}")
     public ResponseEntity<DeleteResponseDto> deleteBillReminder(@PathVariable String billReminderId) {
         return service.deleteBillReminder(billReminderId);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<BillReminderDetailsResponseDto> getBillRemindersDetails() {
+        return service.getBillRemindersDetails();
     }
 }

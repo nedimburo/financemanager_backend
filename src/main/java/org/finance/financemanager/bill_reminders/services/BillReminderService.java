@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.repositories.BillReminderRepository;
@@ -162,6 +163,25 @@ public class BillReminderService {
             return ResponseEntity.ok(response);
         } catch (Exception e){
             throw new RuntimeException("Error deleting bill reminder: " + billReminderId, e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<BillReminderDetailsResponseDto> getBillRemindersDetails() {
+        try {
+            String uid = Auth.getUserId();
+            BigDecimal totalPaidAmount = repository.findTotalPaidBillsByUserId(uid);
+            BigDecimal totalUnpaidAmount = repository.findTotalUnpaidBillsByUserId(uid);
+            BillReminderEntity billReminderToPay = repository.findClosestUnpaidBillByUserId(uid);
+            BillReminderDetailsResponseDto response = new BillReminderDetailsResponseDto();
+            response.setTotalAmountPaidBills(totalPaidAmount != null ? totalPaidAmount : BigDecimal.ZERO);
+            response.setTotalAmountUnpaidBills(totalUnpaidAmount != null ? totalUnpaidAmount : BigDecimal.ZERO);
+            response.setBillToPayName(billReminderToPay != null ? billReminderToPay.getBillName() : "N/A");
+            response.setBillToPayAmount(billReminderToPay != null ? billReminderToPay.getAmount() : BigDecimal.ZERO);
+            response.setBillToPayDueDate(billReminderToPay != null ? billReminderToPay.getDueDate().toString() : "N/A");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting bill reminder details: ", e);
         }
     }
 
