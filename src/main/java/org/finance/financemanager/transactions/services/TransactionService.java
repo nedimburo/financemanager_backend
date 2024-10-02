@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.finance.financemanager.common.enums.FinanceCategory.INVESTMENT;
 import static org.finance.financemanager.common.enums.FinanceCategory.UTILITIES;
@@ -175,6 +177,48 @@ public class TransactionService {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Error getting transaction details: " + e);
+        }
+    }
+
+    @Transactional
+    public List<TransactionResponseDto> getFilteredTransactions(Integer month, Integer year) {
+        try {
+            String uid = Auth.getUserId();
+            List<TransactionEntity> filteredTransactions;
+            if (month != null && year != null) {
+                filteredTransactions = repository.findByMonthAndYearAndByUserId(uid, month, year);
+            } else if (month != null) {
+                filteredTransactions = repository.findByMonthAndByUserId(uid, month);
+            } else if (year != null) {
+                filteredTransactions = repository.findByYearAndByUserId(uid, year);
+            } else {
+                filteredTransactions = repository.findAll();
+            }
+            return filteredTransactions.stream()
+                    .map(this::formatTransactionResponse)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting filtered transactions: ", e);
+        }
+    }
+
+    @Transactional
+    public Page<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
+        try {
+            String uid = Auth.getUserId();
+            Page<TransactionEntity> filteredTransactions;
+            if (month != null && year != null) {
+                filteredTransactions = repository.findByMonthAndYearAndByUserIdPageable(uid, month, year, pageable);
+            } else if (month != null) {
+                filteredTransactions = repository.findByMonthAndByUserIdPageable(uid, month, pageable);
+            } else if (year != null) {
+                filteredTransactions = repository.findByYearAndByUserIdPageable(uid, year, pageable);
+            } else {
+                filteredTransactions = repository.findAllByUserId(uid, pageable);
+            }
+            return filteredTransactions.map(this::formatTransactionResponse);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting filtered transactions: ", e);
         }
     }
 

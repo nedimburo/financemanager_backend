@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
     Page<TransactionEntity> findAllByUserId(String userId, Pageable pageable);
@@ -24,4 +25,16 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     BigDecimal findMaxExpenseByUserId(@Param("userId") String userId);
     @Query("SELECT MAX(t.amount) FROM TransactionEntity t WHERE t.type = 'INCOME' AND t.user.id = :userId ")
     BigDecimal findMaxIncomeByUserId(@Param("userId") String userId);
+    @Query("SELECT t FROM TransactionEntity t WHERE MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.user.id = :userId")
+    List<TransactionEntity> findByMonthAndYearAndByUserId(@Param("userId") String userId, @Param("month") Integer month, @Param("year") Integer year);
+    @Query("SELECT t FROM TransactionEntity t WHERE MONTH(t.date) = :month AND t.user.id = :userId")
+    List<TransactionEntity> findByMonthAndByUserId(@Param("userId") String userId, @Param("month") Integer month);
+    @Query("SELECT t FROM TransactionEntity t WHERE YEAR(t.date) = :year AND t.user.id = :userId")
+    List<TransactionEntity> findByYearAndByUserId(@Param("userId") String userId, @Param("year") Integer year);
+    @Query("SELECT t FROM TransactionEntity t WHERE MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.user.id = :userId")
+    Page<TransactionEntity> findByMonthAndYearAndByUserIdPageable(@Param("userId") String userId, @Param("month") Integer month, @Param("year") Integer year, Pageable pageable);
+    @Query("SELECT t FROM TransactionEntity t WHERE MONTH(t.date) = :month AND t.user.id = :userId")
+    Page<TransactionEntity> findByMonthAndByUserIdPageable(@Param("userId") String userId, @Param("month") Integer month, Pageable pageable);
+    @Query("SELECT t FROM TransactionEntity t WHERE YEAR(t.date) = :year AND t.user.id = :userId")
+    Page<TransactionEntity> findByYearAndByUserIdPageable(@Param("userId") String userId, @Param("year") Integer year, Pageable pageable);
 }

@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
 
 @Slf4j
@@ -70,5 +72,24 @@ public class ClientTransactionController {
     @GetMapping("/details")
     public ResponseEntity<TransactionDetailsResponseDto> getTransactionDetails() {
         return service.getTransactionDetails();
+    }
+
+    @GetMapping("/filtered")
+    public List<TransactionResponseDto> getFilteredTransactions(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year
+    ) {
+        return service.getFilteredTransactions(month, year);
+    }
+
+    @GetMapping("/filtered-page")
+    public Page<TransactionResponseDto> getFilteredTransactionsPageable(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return service.getFilteredTransactionsPageable(month, year, pageable);
     }
 }
