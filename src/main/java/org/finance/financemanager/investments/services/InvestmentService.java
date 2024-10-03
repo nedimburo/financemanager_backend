@@ -11,9 +11,7 @@ import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.investments.entities.InvestmentType;
-import org.finance.financemanager.investments.payloads.InvestmentDetailsResponseDto;
-import org.finance.financemanager.investments.payloads.InvestmentRequestDto;
-import org.finance.financemanager.investments.payloads.InvestmentResponseDto;
+import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.repositories.InvestmentRepository;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
@@ -176,6 +174,27 @@ public class InvestmentService {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Error while getting investment details: " + e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
+        try {
+            InvestmentEntity updatedInvestment = getInvestment(investmentId);
+            if (investmentValueRequest.getAmountInvested() != null) { updatedInvestment.setAmountInvested(investmentValueRequest.getAmountInvested()); }
+            if (investmentValueRequest.getCurrentValue() != null) { updatedInvestment.setCurrentValue(investmentValueRequest.getCurrentValue()); }
+            if (investmentValueRequest.getInterestRate() != null) { updatedInvestment.setInterestRate(investmentValueRequest.getInterestRate()); }
+            updatedInvestment.setUpdated(LocalDateTime.now());
+            InvestmentValueResponseDto response = new InvestmentValueResponseDto();
+            response.setAmountInvested(updatedInvestment.getAmountInvested());
+            response.setCurrentValue(updatedInvestment.getCurrentValue());
+            response.setInterestRate(updatedInvestment.getInterestRate());
+            response.setMessage("Investment has been successfully updated");
+            response.setUpdatedDate(LocalDateTime.now().toString());
+            repository.save(updatedInvestment);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while updating investment values: ", e);
         }
     }
 

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
 
@@ -70,5 +73,12 @@ public class ClientSavingController {
     @GetMapping("/details")
     public ResponseEntity<SavingDetailsResponseDto> getSavingDetails() {
         return service.getSavingDetails();
+    }
+
+    @PatchMapping("/edit-saved-amount/{savingId}")
+    public ResponseEntity<SavingAmountResponseDto> editSavedAmount(
+            @PathVariable String savingId,
+            @RequestParam BigDecimal savedAmount) {
+        return service.editSavedAmount(savingId, savedAmount);
     }
 }

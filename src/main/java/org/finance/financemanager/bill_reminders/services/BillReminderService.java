@@ -9,6 +9,7 @@ import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.repositories.BillReminderRepository;
@@ -135,22 +136,6 @@ public class BillReminderService {
     }
 
     @Transactional
-    public ResponseEntity<BillReminderResponseDto> payBillReminder(String billReminderId) {
-        try {
-            BillReminderEntity updatedBillReminder = getBillReminder(billReminderId);
-            updatedBillReminder.setIsPaid(true);
-            updatedBillReminder.setUpdated(LocalDateTime.now());
-            repository.save(updatedBillReminder);
-
-            BillReminderResponseDto response = formatBillReminderResponse(updatedBillReminder);
-            response.setMessage("Bill reminder has been successfully updated");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating bill reminder: ", e);
-        }
-    }
-
-    @Transactional
     public ResponseEntity<DeleteResponseDto> deleteBillReminder(String billReminderId) {
         try {
             BillReminderEntity billReminder = getBillReminder(billReminderId);
@@ -182,6 +167,23 @@ public class BillReminderService {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Error getting bill reminder details: ", e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(String billReminderId) {
+        try {
+            BillReminderEntity updatedBill = getBillReminder(billReminderId);
+            updatedBill.setIsPaid(!updatedBill.getIsPaid());
+            updatedBill.setUpdated(LocalDateTime.now());
+            BillReminderPayResponse response = new BillReminderPayResponse();
+            response.setPaymentStatus(updatedBill.getIsPaid());
+            response.setMessage("Bill reminder has been successfully updated");
+            response.setUpdatedDate(LocalDateTime.now().toString());
+            repository.save(updatedBill);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating bill reminder payment details: ", e);
         }
     }
 

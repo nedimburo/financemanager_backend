@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.services.BillReminderService;
@@ -62,11 +63,6 @@ public class ClientBillReminderController {
         return service.updateBillReminder(billReminderId, billReminderRequest);
     }
 
-    @PatchMapping("/pay/{billReminderId}")
-    public ResponseEntity<BillReminderResponseDto> payBillReminder(@PathVariable String billReminderId) {
-        return service.payBillReminder(billReminderId);
-    }
-
     @DeleteMapping("/{billReminderId}")
     public ResponseEntity<DeleteResponseDto> deleteBillReminder(@PathVariable String billReminderId) {
         return service.deleteBillReminder(billReminderId);
@@ -75,5 +71,10 @@ public class ClientBillReminderController {
     @GetMapping("/details")
     public ResponseEntity<BillReminderDetailsResponseDto> getBillRemindersDetails() {
         return service.getBillRemindersDetails();
+    }
+
+    @PatchMapping("/paid-status/{billReminderId}")
+    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@PathVariable String billReminderId) {
+        return service.editBillReminderPayment(billReminderId);
     }
 }

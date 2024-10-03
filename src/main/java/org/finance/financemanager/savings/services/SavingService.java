@@ -10,6 +10,7 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
 import org.finance.financemanager.savings.entities.SavingEntity;
+import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
@@ -163,6 +164,23 @@ public class SavingService {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             throw new RuntimeException("Error while getting savings details: ", e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<SavingAmountResponseDto> editSavedAmount(String savingId, BigDecimal savedAmount) {
+        try {
+            SavingEntity updatedSaving = getSaving(savingId);
+            if (savedAmount != null) { updatedSaving.setCurrentAmount(savedAmount); }
+            updatedSaving.setUpdated(LocalDateTime.now());
+            SavingAmountResponseDto response = new SavingAmountResponseDto();
+            response.setCurrentAmount(updatedSaving.getCurrentAmount());
+            response.setMessage("Saving has been successfully updated");
+            response.setUpdatedDate(LocalDateTime.now().toString());
+            repository.save(updatedSaving);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error editing saved amount for saving: ", e);
         }
     }
 
