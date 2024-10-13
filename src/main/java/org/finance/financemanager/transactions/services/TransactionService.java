@@ -14,6 +14,7 @@ import org.finance.financemanager.common.payloads.DeleteResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
+import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
@@ -25,7 +26,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -219,6 +222,43 @@ public class TransactionService {
             return filteredTransactions.map(this::formatTransactionResponse);
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<ExpenseIncomeResponseDto> getTotalExpenseAndIncomeForYear(Integer year) {
+        try {
+            String uid = Auth.getUserId();
+            BigDecimal expenseTotal = repository.findTotalExpenseByYearAndUserId(year, uid);
+            BigDecimal incomeTotal = repository.findTotalIncomeByYearAndUserId(year, uid);
+            ExpenseIncomeResponseDto response = new ExpenseIncomeResponseDto(expenseTotal, incomeTotal);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting expense and income for year: " + year, e);
+        }
+    }
+
+    @Transactional
+    public Map<String, ExpenseIncomeResponseDto> getTotalAmountsForEachMonth(Integer year) {
+        try {
+            String uid = Auth.getUserId();
+            Map<String, ExpenseIncomeResponseDto> response = new HashMap<>();
+            String[] monthNames = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+            for(int month = 1; month <= 12; month++) {
+                BigDecimal totalExpense = repository.findTotalExpenseByYearAndMonthAndUserId(year, month, uid);
+                BigDecimal totalIncome = repository.findTotalIncomeByYearAndMonthAndUserId(year, month, uid);
+                if (totalExpense == null) {
+                    totalExpense = BigDecimal.ZERO;
+                }
+                if (totalIncome == null) {
+                    totalIncome = BigDecimal.ZERO;
+                }
+                ExpenseIncomeResponseDto data = new ExpenseIncomeResponseDto(totalExpense, totalIncome);
+                response.put(monthNames[month - 1], data);
+            }
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting expense and income for each month: " + year, e);
         }
     }
 

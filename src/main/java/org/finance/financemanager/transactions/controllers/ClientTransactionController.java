@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
 
@@ -91,5 +93,19 @@ public class ClientTransactionController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return service.getFilteredTransactionsPageable(month, year, pageable);
+    }
+
+    @GetMapping("/total-amounts-yearly")
+    public ResponseEntity<ExpenseIncomeResponseDto> getTotalExpenseAndIncomeForYear(
+            @RequestParam Integer year
+    ) {
+        return service.getTotalExpenseAndIncomeForYear(year);
+    }
+
+    @GetMapping("/total-amounts-monthly")
+    public Map<String, ExpenseIncomeResponseDto> getTotalAmountsForEachMonth(
+            @RequestParam Integer year
+    ) {
+        return service.getTotalAmountsForEachMonth(year);
     }
 }
