@@ -20,15 +20,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+    private final CorsConfig corsConfig;
     private final FirebaseJwtFilter firebaseJwtFilter;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
-        config.setAllowedMethods(List.of("*"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setMaxAge(3600L);
+        config.setAllowedOrigins(corsConfig.getAllowedOrigins());
+        config.setAllowedMethods(corsConfig.getAllowedMethods());
+        config.setAllowedHeaders(corsConfig.getAllowedHeaders());
+        config.setAllowCredentials(corsConfig.getAllowCredentials());
+        config.setMaxAge(corsConfig.getMaxAge());
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
