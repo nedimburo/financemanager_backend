@@ -29,7 +29,7 @@ public class PublicUserController {
     private final UserService service;
 
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, @RequestBody @Valid RegistrationRequestDto registrationRequest) {
+    public ResponseEntity<?> register(HttpServletRequest request, @RequestBody @Valid RegistrationRequestDto registrationRequest) {
         return service.register(request, registrationRequest);
     }
 }

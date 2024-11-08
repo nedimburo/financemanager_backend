@@ -51,35 +51,44 @@ public class UserService {
 
     @Transactional
     @SneakyThrows
-    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
+    public ResponseEntity<?> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
         String tokenHeader = request.getHeader("Token");
-        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-            String token = tokenHeader.substring(7);
-            try {
-                FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-                UserEntity newUser = new UserEntity();
-                newUser.setId(decodedToken.getUid());
-                newUser.setEmail(decodedToken.getEmail());
-                newUser.setFirstName(registrationRequest.getFirstName());
-                newUser.setLastName(registrationRequest.getLastName());
-                newUser.setRole(roleService.findByName(CLIENT));
-                newUser.setCreated(LocalDateTime.now());
-                newUser.setUpdated(LocalDateTime.now());
-                repository.save(newUser);
+        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Token header missing or not properly formatted.");
+        }
 
-                RegistrationResponseDto response = new RegistrationResponseDto();
-                response.setEmail(newUser.getEmail());
-                response.setFirstName(newUser.getFirstName());
-                response.setLastName(newUser.getLastName());
-                response.setRole(newUser.getRole().getName());
-                response.setRegistrationDate(newUser.getCreated().toString());
-                response.setMessage("User has been successfully registered.");
-                return ResponseEntity.ok(response);
-            } catch (Exception e) {
-                throw new RuntimeException("Invalid or expired token", e);
+        String token = tokenHeader.substring(7);
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            String userId = decodedToken.getUid();
+
+            if (repository.existsById(userId)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("User profile already exists.");
             }
-        } else {
-            throw new RuntimeException("Token header missing or doesn't contain Bearer token");
+
+            UserEntity newUser = new UserEntity();
+            newUser.setId(userId);
+            newUser.setEmail(decodedToken.getEmail());
+            newUser.setFirstName(registrationRequest.getFirstName());
+            newUser.setLastName(registrationRequest.getLastName());
+            newUser.setRole(roleService.findByName(CLIENT));
+            newUser.setCreated(LocalDateTime.now());
+            newUser.setUpdated(LocalDateTime.now());
+            repository.save(newUser);
+
+            RegistrationResponseDto response = new RegistrationResponseDto();
+            response.setEmail(newUser.getEmail());
+            response.setFirstName(newUser.getFirstName());
+            response.setLastName(newUser.getLastName());
+            response.setRole(newUser.getRole().getName());
+            response.setRegistrationDate(newUser.getCreated().toString());
+            response.setMessage("User has been successfully registered.");
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid or expired token", e);
         }
     }
 
