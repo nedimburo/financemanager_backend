@@ -1,4 +1,4 @@
-package org.finance.financemanager.common.payloads;
+package org.finance.financemanager.currency_rates.payloads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.finance.financemanager.common.payloads.CurrencyRateDto;
+import org.finance.financemanager.currency_rates.payloads.CurrencyRateDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,21 +27,6 @@ public class FxRatesService {
 
     @Value("${fx.rates.access.token}")
     private String fxRatesAccessToken;
-
-    @Transactional
-    public List<String> getCurrencies() {
-        try {
-            String apiResponse = makeApiCall("currencies");
-            List<String> currencyCodes = new ArrayList<>();
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> currencyMap = objectMapper.readValue(apiResponse, new TypeReference<Map<String, Object>>() {});
-            currencyCodes.addAll(currencyMap.keySet());
-            return currencyCodes;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     @Transactional
     public List<CurrencyRateDto> getExchangeRates() {
