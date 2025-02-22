@@ -35,6 +35,9 @@ public class UserEntity implements User {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private RoleEntity role;
