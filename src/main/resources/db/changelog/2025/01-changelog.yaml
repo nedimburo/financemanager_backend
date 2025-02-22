@@ -1,0 +1,19 @@
+databaseChangeLog:
+- changeSet:
+    id: 1740261861262-1
+    author: nedim.buro (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: description
+            type: VARCHAR(255)
+        tableName: users
+- changeSet:
+    id: 1740261861262-2
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: limit
+        tableName: budgets
+
