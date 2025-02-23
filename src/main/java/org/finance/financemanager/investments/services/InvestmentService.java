@@ -102,12 +102,10 @@ public class InvestmentService {
             newInvestment.setCurrentValue(investmentRequest.getCurrentValue());
             newInvestment.setInterestRate(investmentRequest.getInterestRate());
             newInvestment.setStartDate(investmentRequest.getStartDate());
-            newInvestment.setCreated(LocalDateTime.now());
-            newInvestment.setUpdated(LocalDateTime.now());
             newInvestment.setUser(user);
-            repository.save(newInvestment);
+            InvestmentEntity savedInvestment = repository.save(newInvestment);
 
-            transactionService.createTransactionFromInvestment(newInvestment);
+            transactionService.createTransactionFromInvestment(savedInvestment);
 
             InvestmentResponseDto response = formatInvestmentResponse(newInvestment);
             response.setMessage("Investment has been successfully created");
@@ -127,7 +125,6 @@ public class InvestmentService {
             if (investmentRequest.getCurrentValue() != null) { updatedInvestment.setCurrentValue(investmentRequest.getCurrentValue()); }
             if (investmentRequest.getInterestRate() != null) { updatedInvestment.setInterestRate(investmentRequest.getInterestRate()); }
             if (investmentRequest.getStartDate() != null) { updatedInvestment.setStartDate(investmentRequest.getStartDate()); }
-            updatedInvestment.setUpdated(LocalDateTime.now());
             repository.save(updatedInvestment);
 
             InvestmentResponseDto response = formatInvestmentResponse(updatedInvestment);
@@ -184,7 +181,6 @@ public class InvestmentService {
             if (investmentValueRequest.getAmountInvested() != null) { updatedInvestment.setAmountInvested(investmentValueRequest.getAmountInvested()); }
             if (investmentValueRequest.getCurrentValue() != null) { updatedInvestment.setCurrentValue(investmentValueRequest.getCurrentValue()); }
             if (investmentValueRequest.getInterestRate() != null) { updatedInvestment.setInterestRate(investmentValueRequest.getInterestRate()); }
-            updatedInvestment.setUpdated(LocalDateTime.now());
             InvestmentValueResponseDto response = new InvestmentValueResponseDto();
             response.setAmountInvested(updatedInvestment.getAmountInvested());
             response.setCurrentValue(updatedInvestment.getCurrentValue());

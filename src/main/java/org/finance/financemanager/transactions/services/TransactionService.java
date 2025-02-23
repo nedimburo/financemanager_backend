@@ -111,12 +111,10 @@ public class TransactionService {
             newTransaction.setAmount(transactionRequest.getAmount());
             newTransaction.setDescription(transactionRequest.getDescription());
             newTransaction.setDate(transactionRequest.getDate());
-            newTransaction.setCreated(LocalDateTime.now());
-            newTransaction.setUpdated(LocalDateTime.now());
             newTransaction.setUser(user);
-            repository.save(newTransaction);
+            TransactionEntity savedTransaction = repository.save(newTransaction);
 
-            TransactionResponseDto response = formatTransactionResponse(newTransaction);
+            TransactionResponseDto response = formatTransactionResponse(savedTransaction);
             response.setMessage("Transaction has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -133,7 +131,6 @@ public class TransactionService {
             if (transactionRequest.getAmount() != null) { updatedTransaction.setAmount(transactionRequest.getAmount()); }
             if (transactionRequest.getDescription() != null) { updatedTransaction.setDescription(transactionRequest.getDescription()); }
             if (transactionRequest.getDate() != null) { updatedTransaction.setDate(transactionRequest.getDate()); }
-            updatedTransaction.setUpdated(LocalDateTime.now());
             repository.save(updatedTransaction);
 
             TransactionResponseDto response = formatTransactionResponse(updatedTransaction);
@@ -284,8 +281,6 @@ public class TransactionService {
             newTransaction.setAmount(billReminder.getAmount());
             newTransaction.setDate(billReminder.getReceivedDate());
             newTransaction.setDescription(billReminder.getBillName());
-            newTransaction.setCreated(LocalDateTime.now());
-            newTransaction.setUpdated(LocalDateTime.now());
             newTransaction.setUser(billReminder.getUser());
             repository.save(newTransaction);
         } catch (Exception e) {
@@ -302,8 +297,6 @@ public class TransactionService {
             newTransaction.setAmount(investment.getAmountInvested());
             newTransaction.setDate(investment.getStartDate());
             newTransaction.setDescription(investment.getInvestmentName());
-            newTransaction.setCreated(LocalDateTime.now());
-            newTransaction.setUpdated(LocalDateTime.now());
             newTransaction.setUser(investment.getUser());
             repository.save(newTransaction);
         } catch (Exception e) {

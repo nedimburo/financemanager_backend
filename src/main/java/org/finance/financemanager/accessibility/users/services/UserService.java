@@ -72,16 +72,14 @@ public class UserService {
             newUser.setFirstName(registrationRequest.getFirstName());
             newUser.setLastName(registrationRequest.getLastName());
             newUser.setRole(roleService.findByName(CLIENT));
-            newUser.setCreated(LocalDateTime.now());
-            newUser.setUpdated(LocalDateTime.now());
-            repository.save(newUser);
+            UserEntity savedUser = repository.save(newUser);
 
             RegistrationResponseDto response = new RegistrationResponseDto();
-            response.setEmail(newUser.getEmail());
-            response.setFirstName(newUser.getFirstName());
-            response.setLastName(newUser.getLastName());
-            response.setRole(RoleName.CLIENT);
-            response.setRegistrationDate(newUser.getCreated().toString());
+            response.setEmail(savedUser.getEmail());
+            response.setFirstName(savedUser.getFirstName());
+            response.setLastName(savedUser.getLastName());
+            response.setRole(savedUser.getRole().getName());
+            response.setRegistrationDate(savedUser.getCreated().toString());
             response.setMessage("User has been successfully registered.");
             return ResponseEntity.status(HttpStatus.OK)
                     .body(response);

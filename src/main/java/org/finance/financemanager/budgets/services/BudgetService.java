@@ -99,12 +99,10 @@ public class BudgetService {
             newBudget.setBudgetLimit(budgetRequest.getBudgetLimit());
             newBudget.setStartDate(budgetRequest.getStartDate());
             newBudget.setEndDate(budgetRequest.getEndDate());
-            newBudget.setCreated(LocalDateTime.now());
-            newBudget.setUpdated(LocalDateTime.now());
             newBudget.setUser(user);
-            repository.save(newBudget);
+            BudgetEntity savedBudget = repository.save(newBudget);
 
-            BudgetResponseDto response = formatBudgetResponse(newBudget);
+            BudgetResponseDto response = formatBudgetResponse(savedBudget);
             response.setMessage("Budget has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -121,7 +119,6 @@ public class BudgetService {
             if (budgetRequest.getBudgetLimit() != null) { updatedBudget.setBudgetLimit(budgetRequest.getBudgetLimit()); }
             if (budgetRequest.getStartDate() != null) { updatedBudget.setStartDate(budgetRequest.getStartDate()); }
             if (budgetRequest.getEndDate() != null) { updatedBudget.setEndDate(budgetRequest.getEndDate()); }
-            updatedBudget.setUpdated(LocalDateTime.now());
             repository.save(updatedBudget);
 
             BudgetResponseDto response = formatBudgetResponse(updatedBudget);

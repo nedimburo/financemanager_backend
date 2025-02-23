@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.roles.Role;
+import org.finance.financemanager.common.entities.Auditable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "roles")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class RoleEntity implements Role {
+public class RoleEntity extends Auditable implements Role {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -23,9 +26,11 @@ public class RoleEntity implements Role {
     @Enumerated(EnumType.STRING)
     private RoleName name;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 }

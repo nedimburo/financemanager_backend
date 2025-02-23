@@ -101,12 +101,10 @@ public class BillReminderService {
             newBillReminder.setReceivedDate(billReminderRequest.getReceivedDate());
             newBillReminder.setDueDate(billReminderRequest.getDueDate());
             newBillReminder.setIsPaid(false);
-            newBillReminder.setCreated(LocalDateTime.now());
-            newBillReminder.setUpdated(LocalDateTime.now());
             newBillReminder.setUser(user);
-            repository.save(newBillReminder);
+            BillReminderEntity savedBillReminder = repository.save(newBillReminder);
 
-            transactionService.createTransactionFromBillReminder(newBillReminder);
+            transactionService.createTransactionFromBillReminder(savedBillReminder);
 
             BillReminderResponseDto response = formatBillReminderResponse(newBillReminder);
             response.setMessage("Bill reminder has been successfully created");
@@ -124,7 +122,6 @@ public class BillReminderService {
             if (billReminderRequest.getAmount() != null) { updatedBillReminder.setAmount(billReminderRequest.getAmount()); }
             if (billReminderRequest.getReceivedDate() != null) { updatedBillReminder.setReceivedDate(billReminderRequest.getReceivedDate()); }
             if (billReminderRequest.getDueDate() != null) { updatedBillReminder.setDueDate(billReminderRequest.getDueDate()); }
-            updatedBillReminder.setUpdated(LocalDateTime.now());
             repository.save(updatedBillReminder);
 
             BillReminderResponseDto response = formatBillReminderResponse(updatedBillReminder);
@@ -175,7 +172,6 @@ public class BillReminderService {
         try {
             BillReminderEntity updatedBill = getBillReminder(billReminderId);
             updatedBill.setIsPaid(!updatedBill.getIsPaid());
-            updatedBill.setUpdated(LocalDateTime.now());
             BillReminderPayResponse response = new BillReminderPayResponse();
             response.setPaymentStatus(updatedBill.getIsPaid());
             response.setMessage("Bill reminder has been successfully updated");

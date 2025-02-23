@@ -99,12 +99,10 @@ public class SavingService {
             newSaving.setCurrentAmount(savingRequest.getCurrentAmount());
             newSaving.setStartDate(savingRequest.getStartDate());
             newSaving.setTargetDate(savingRequest.getTargetDate());
-            newSaving.setCreated(LocalDateTime.now());
-            newSaving.setUpdated(LocalDateTime.now());
             newSaving.setUser(user);
-            repository.save(newSaving);
+            SavingEntity savedSaving = repository.save(newSaving);
 
-            SavingResponseDto response = formatSavingResponse(newSaving);
+            SavingResponseDto response = formatSavingResponse(savedSaving);
             response.setMessage("Saving has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -121,7 +119,6 @@ public class SavingService {
             if (savingRequest.getCurrentAmount() != null) { updatedSaving.setCurrentAmount(savingRequest.getCurrentAmount()); }
             if (savingRequest.getStartDate() != null) { updatedSaving.setStartDate(savingRequest.getStartDate()); }
             if (savingRequest.getTargetDate() != null) { updatedSaving.setTargetDate(savingRequest.getTargetDate()); }
-            updatedSaving.setUpdated(LocalDateTime.now());
             repository.save(updatedSaving);
 
             SavingResponseDto response = formatSavingResponse(updatedSaving);
@@ -172,7 +169,6 @@ public class SavingService {
         try {
             SavingEntity updatedSaving = getSaving(savingId);
             if (savedAmount != null) { updatedSaving.setCurrentAmount(savedAmount); }
-            updatedSaving.setUpdated(LocalDateTime.now());
             SavingAmountResponseDto response = new SavingAmountResponseDto();
             response.setCurrentAmount(updatedSaving.getCurrentAmount());
             response.setMessage("Saving has been successfully updated");

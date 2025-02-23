@@ -7,7 +7,10 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.finance.financemanager.common.entities.Auditable;
 import org.finance.financemanager.currency_rates.CurrencyRate;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +19,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "currency_rates")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class CurrencyRateEntity implements CurrencyRate {
+public class CurrencyRateEntity extends Auditable implements CurrencyRate {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -28,9 +31,11 @@ public class CurrencyRateEntity implements CurrencyRate {
     @Column(name = "rate")
     private double rate;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 }
