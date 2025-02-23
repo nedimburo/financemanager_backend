@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.auth.payloads.FirebaseUpdateResponseDto;
 import org.finance.financemanager.accessibility.auth.services.FirebaseAuthService;
@@ -50,9 +49,8 @@ public class UserService {
     }
 
     @Transactional
-    @SneakyThrows
     public ResponseEntity<?> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
-        String tokenHeader = request.getHeader("Token");
+        String tokenHeader = request.getHeader("Authorization");
         if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Token header missing or not properly formatted.");
@@ -82,7 +80,7 @@ public class UserService {
             response.setEmail(newUser.getEmail());
             response.setFirstName(newUser.getFirstName());
             response.setLastName(newUser.getLastName());
-            response.setRole(newUser.getRole().getName());
+            response.setRole(RoleName.CLIENT);
             response.setRegistrationDate(newUser.getCreated().toString());
             response.setMessage("User has been successfully registered.");
             return ResponseEntity.status(HttpStatus.OK)

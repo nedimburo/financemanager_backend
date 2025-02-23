@@ -8,9 +8,12 @@ import org.finance.financemanager.accessibility.roles.entities.RoleEntity;
 import org.finance.financemanager.accessibility.users.User;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.budgets.entities.BudgetEntity;
+import org.finance.financemanager.common.entities.Auditable;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.savings.entities.SavingEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +23,7 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class UserEntity implements User {
+public class UserEntity extends Auditable implements User {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -42,10 +45,12 @@ public class UserEntity implements User {
     @JoinColumn(name = "role_id")
     private RoleEntity role;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", updatable = false, nullable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", updatable = false, nullable = false)
     private LocalDateTime updated;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

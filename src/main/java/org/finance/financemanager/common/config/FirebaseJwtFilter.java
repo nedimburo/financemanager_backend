@@ -30,6 +30,11 @@ public class FirebaseJwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        String requestPath = request.getRequestURI();
+        if (requestPath.startsWith("/api/v1/public/") || requestPath.startsWith("/api/v1/actuator/")) {
+            chain.doFilter(request, response);
+            return;
+        }
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7);
