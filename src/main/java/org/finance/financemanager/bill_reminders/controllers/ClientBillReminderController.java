@@ -10,7 +10,7 @@ import org.finance.financemanager.bill_reminders.payloads.BillReminderPayRespons
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.services.BillReminderService;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,7 +64,7 @@ public class ClientBillReminderController {
     }
 
     @DeleteMapping("/{billReminderId}")
-    public ResponseEntity<DeleteResponseDto> deleteBillReminder(@PathVariable String billReminderId) {
+    public ResponseEntity<SuccessResponseDto> deleteBillReminder(@PathVariable String billReminderId) {
         return service.deleteBillReminder(billReminderId);
     }
 

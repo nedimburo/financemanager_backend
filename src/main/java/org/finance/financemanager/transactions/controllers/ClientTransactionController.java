@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
@@ -67,7 +67,7 @@ public class ClientTransactionController {
     }
 
     @DeleteMapping("/{transactionId}")
-    public ResponseEntity<DeleteResponseDto> deleteTransaction(@PathVariable String transactionId) {
+    public ResponseEntity<SuccessResponseDto> deleteTransaction(@PathVariable String transactionId) {
         return service.deleteTransaction(transactionId);
     }
 

@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
@@ -66,7 +66,7 @@ public class ClientSavingController {
     }
 
     @DeleteMapping("/{savingId}")
-    public ResponseEntity<DeleteResponseDto> deleteSaving(@PathVariable String savingId) {
+    public ResponseEntity<SuccessResponseDto> deleteSaving(@PathVariable String savingId) {
         return service.deleteSaving(savingId);
     }
 

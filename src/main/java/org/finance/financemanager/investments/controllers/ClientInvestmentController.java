@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.services.InvestmentService;
 import org.springframework.data.domain.Page;
@@ -61,7 +61,7 @@ public class ClientInvestmentController {
     }
 
     @DeleteMapping("/{investmentId}")
-    public ResponseEntity<DeleteResponseDto> deleteInvestment(@PathVariable String investmentId) {
+    public ResponseEntity<SuccessResponseDto> deleteInvestment(@PathVariable String investmentId) {
         return service.deleteInvestment(investmentId);
     }
 

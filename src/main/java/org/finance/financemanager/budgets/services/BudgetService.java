@@ -14,11 +14,13 @@ import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.repositories.BudgetRepository;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -130,16 +132,18 @@ public class BudgetService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteBudget(String budgetId) {
+    public ResponseEntity<SuccessResponseDto> deleteBudget(String budgetId) {
         try {
             BudgetEntity budget = getBudget(budgetId);
             repository.delete(budget);
 
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(budgetId);
-            response.setMessage("Budget has been successfully deleted");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("Budget has been deleted successfully.")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting budget: " + budgetId, e);
         }

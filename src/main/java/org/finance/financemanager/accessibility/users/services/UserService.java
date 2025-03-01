@@ -19,12 +19,13 @@ import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -210,16 +211,19 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteUser(String userId) {
+    public ResponseEntity<SuccessResponseDto> deleteUser(String userId) {
         try {
             UserEntity user = getUser(userId);
             firebaseAuthService.deleteUser(user.getId());
             repository.deleteById(user.getId());
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(userId);
-            response.setMessage("User has been deleted successfully.");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("User has been deleted successfully.")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e) {
             throw new RuntimeException("Error while deleting user: ", e);
         }

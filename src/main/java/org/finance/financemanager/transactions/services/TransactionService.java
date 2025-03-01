@@ -10,7 +10,7 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
@@ -21,8 +21,10 @@ import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -142,16 +144,18 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteTransaction(String transactionId) {
+    public ResponseEntity<SuccessResponseDto> deleteTransaction(String transactionId) {
         try {
             TransactionEntity transaction = getTransaction(transactionId);
             repository.delete(transaction);
 
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(transactionId);
-            response.setMessage("Transaction has been successfully deleted");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("Transaction has been successfully deleted")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting transaction: " + transactionId, e);
         }

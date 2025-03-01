@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.investments.entities.InvestmentType;
 import org.finance.financemanager.investments.payloads.*;
@@ -16,8 +16,10 @@ import org.finance.financemanager.investments.repositories.InvestmentRepository;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -136,16 +138,18 @@ public class InvestmentService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteInvestment(String investmentId) {
+    public ResponseEntity<SuccessResponseDto> deleteInvestment(String investmentId) {
         try {
             InvestmentEntity investment = getInvestment(investmentId);
             repository.delete(investment);
 
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(investmentId);
-            response.setMessage("Investment has been successfully deleted");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("Investment has been deleted successfully.")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting investment: " + investmentId, e);
         }
