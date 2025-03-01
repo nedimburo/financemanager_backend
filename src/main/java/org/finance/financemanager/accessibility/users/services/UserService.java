@@ -19,6 +19,8 @@ import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
+import org.finance.financemanager.common.exceptions.BadRequestException;
+import org.finance.financemanager.common.exceptions.ResourceAlreadyExistsException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,11 +52,10 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
+    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, RegistrationRequestDto registrationRequest) throws Exception {
         String tokenHeader = request.getHeader("Authorization");
         if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Token header missing or not properly formatted.");
+            throw new BadRequestException("Token header missing or not properly formatted.");
         }
 
         String token = tokenHeader.substring(7);
@@ -63,8 +64,7 @@ public class UserService {
             String userId = decodedToken.getUid();
 
             if (repository.existsById(userId)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("User profile already exists.");
+                throw new ResourceAlreadyExistsException("User profile with ID: " + userId + " already exists.");
             }
 
             UserEntity newUser = new UserEntity();
@@ -84,8 +84,8 @@ public class UserService {
             response.setMessage("User has been successfully registered.");
             return ResponseEntity.status(HttpStatus.OK)
                     .body(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid or expired token", e);
+        } catch (FirebaseAuthException e) {
+            throw new Exception("Invalid or expired token: " + e.getMessage());
         }
     }
 

@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.config;
 
+import org.finance.financemanager.common.exceptions.BadRequestException;
 import org.finance.financemanager.common.exceptions.ResourceAlreadyExistsException;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.payloads.ErrorResponseDto;
@@ -13,6 +14,20 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(BadRequestException ex, WebRequest request) {
+        return new ResponseEntity<>(
+                ErrorResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .message(ex.getMessage())
+                        .path(request.getDescription(false))
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFound(ResourceNotFoundException ex, WebRequest request) {
