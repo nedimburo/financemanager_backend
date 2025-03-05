@@ -26,7 +26,7 @@ public class CommonUserController {
     private final UserService service;
 
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileResponseDto> getUserProfile() {
+    public ResponseEntity<UserProfileResponseDto> getUserProfile() throws Exception {
         return service.getUserProfile();
     }
 

@@ -19,8 +19,7 @@ import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.exceptions.BadRequestException;
-import org.finance.financemanager.common.exceptions.ResourceAlreadyExistsException;
+import org.finance.financemanager.common.exceptions.*;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,36 +89,56 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<UserProfileResponseDto> getUserProfile() {
+    public ResponseEntity<UserProfileResponseDto> getUserProfile() throws Exception {
+        String uid;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = getUser(uid);
-            UserProfileResponseDto profileResponse = new UserProfileResponseDto();
-            profileResponse.setUserId(user.getId());
-            profileResponse.setEmail(user.getEmail());
-            profileResponse.setFirstName(user.getFirstName());
-            profileResponse.setLastName(user.getLastName());
-            profileResponse.setRole(user.getRole().getName());
-            profileResponse.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-            return ResponseEntity.ok(profileResponse);
+           uid = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error while getting user profile data: ", e);
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        UserEntity user;
+        try {
+            user = getUser(uid);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("User with ID: " + uid + " doesn't exist");
+        }
+
+        try {
+            UserProfileResponseDto responseDto = new UserProfileResponseDto();
+            responseDto.setUserId(user.getId());
+            responseDto.setEmail(user.getEmail());
+            responseDto.setFirstName(user.getFirstName());
+            responseDto.setLastName(user.getLastName());
+            responseDto.setRole(user.getRole().getName());
+            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(responseDto);
+        } catch (Exception e) {
+            throw new Exception("Error while getting user profile data: ", e);
         }
     }
 
     @Transactional
     public ResponseEntity<UserResponseDto> getUserById(String userId) {
+        UserEntity user;
         try {
-            UserEntity user = getUser(userId);
-            UserResponseDto response = new UserResponseDto();
-            response.setUserId(user.getId());
-            response.setEmail(user.getEmail());
-            response.setFirstName(user.getFirstName());
-            response.setLastName(user.getLastName());
-            response.setRole(user.getRole().getName());
-            response.setNumberOfTransactions(user.getTransactions().size());
-            response.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-            return ResponseEntity.ok(response);
+            user = getUser(userId);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        try {
+            UserResponseDto responseDto = new UserResponseDto();
+            responseDto.setUserId(user.getId());
+            responseDto.setEmail(user.getEmail());
+            responseDto.setFirstName(user.getFirstName());
+            responseDto.setLastName(user.getLastName());
+            responseDto.setRole(user.getRole().getName());
+            responseDto.setNumberOfTransactions(user.getTransactions().size());
+            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(responseDto);
         } catch (Exception e) {
             throw new RuntimeException("Error while getting user: ", e);
         }

@@ -27,7 +27,7 @@ public class AdminUserController {
 
     private final UserService service;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/specific")
     public ResponseEntity<UserResponseDto> getUserById(@RequestParam String userId) {
         return service.getUserById(userId);
     }

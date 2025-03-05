@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -22,6 +23,7 @@ public class WebSecurityConfig {
 
     private final CorsConfig corsConfig;
     private final FirebaseJwtFilter firebaseJwtFilter;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -46,7 +48,11 @@ public class WebSecurityConfig {
                         .requestMatchers("/client/**").hasAuthority(RoleName.CLIENT.name())
                         .requestMatchers("/admin/**").hasAuthority(RoleName.ADMIN.name())
                         .anyRequest().permitAll()
-                ).addFilterBefore(firebaseJwtFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .addFilterBefore(firebaseJwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
