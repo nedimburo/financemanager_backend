@@ -10,17 +10,22 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
+import org.finance.financemanager.transactions.mappers.TransactionMapper;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
+import org.finance.financemanager.transactions.specifications.TransactionSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -45,45 +50,26 @@ import static org.finance.financemanager.transactions.entities.TransactionType.E
 public class TransactionService {
 
     private final TransactionRepository repository;
+    private final TransactionMapper transactionMapper;
     private final UserService userService;
 
     @Transactional
-    public Page<TransactionResponseDto> getUsersTransactions(Pageable pageable) {
+    public Page<TransactionResponseDto> getUsersTransactions(Pageable pageable, String query, TransactionType type, FinanceCategory category) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(transaction -> new TransactionResponseDto(
-                            transaction.getId(),
-                            transaction.getUser().getId(),
-                            transaction.getType().toString(),
-                            transaction.getCategory().toString(),
-                            transaction.getAmount(),
-                            transaction.getDescription(),
-                            transaction.getDate().toString(),
-                            null,
-                            transaction.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users transactions: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public Page<TransactionResponseDto> searchUsersTransactions(String description, Pageable pageable) {
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndDescriptionContainingIgnoreCase(uid, description, pageable)
-                    .map(transaction -> new TransactionResponseDto(
-                            transaction.getId(),
-                            transaction.getUser().getId(),
-                            transaction.getType().toString(),
-                            transaction.getCategory().toString(),
-                            transaction.getAmount(),
-                            transaction.getDescription(),
-                            transaction.getDate().toString(),
-                            null,
-                            transaction.getCreated().toString()
-                    ));
+            Specification<TransactionEntity> spec = TransactionSpecification.filterTransactions(query, type, category, userId);
+            return repository.findAll(spec, pageable).map(transactionMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users transactions: ", e);
         }

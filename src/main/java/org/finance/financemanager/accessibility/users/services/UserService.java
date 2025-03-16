@@ -275,4 +275,8 @@ public class UserService {
         return repository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
     }
+
+    public Boolean doesUserExist(String userId) {
+        return repository.existsById(userId);
+    }
 }
