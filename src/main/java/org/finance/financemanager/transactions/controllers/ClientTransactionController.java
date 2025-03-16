@@ -5,7 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
+import org.finance.financemanager.transactions.entities.TransactionOrderBy;
+import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
@@ -14,6 +17,7 @@ import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,20 +39,17 @@ public class ClientTransactionController {
     @GetMapping("/")
     public Page<TransactionResponseDto> getUsersTransactions(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) TransactionOrderBy orderBy,
+            @RequestParam(required = false) Boolean orderDirection,
+            @RequestParam(required = false) TransactionType type,
+            @RequestParam(required = false) FinanceCategory category
     ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.getUsersTransactions(pageable);
-    }
+        Sort.Direction direction = (orderDirection != null && orderDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, (orderBy != null) ? orderBy.getColumn() : "id"));
 
-    @GetMapping("/search")
-    public Page<TransactionResponseDto> searchUsersTransactions(
-            @RequestParam String description,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.searchUsersTransactions(description, pageable);
+        return service.getUsersTransactions(pageable, query, type, category);
     }
 
     @GetMapping("/{transactionId}")
@@ -56,7 +57,7 @@ public class ClientTransactionController {
         return service.getTransactionById(transactionId);
     }
 
-    @PostMapping("/create")
+    @PostMapping("/")
     public ResponseEntity<TransactionResponseDto> createTransaction(@RequestBody TransactionRequestDto transactionRequest) {
         return service.createTransaction(transactionRequest);
     }
@@ -67,7 +68,7 @@ public class ClientTransactionController {
     }
 
     @DeleteMapping("/{transactionId}")
-    public ResponseEntity<DeleteResponseDto> deleteTransaction(@PathVariable String transactionId) {
+    public ResponseEntity<SuccessResponseDto> deleteTransaction(@PathVariable String transactionId) {
         return service.deleteTransaction(transactionId);
     }
 

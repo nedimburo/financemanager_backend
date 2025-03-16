@@ -6,6 +6,9 @@ import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.bill_reminders.BillReminder;
+import org.finance.financemanager.common.entities.Auditable;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,7 +18,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bill_reminders")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class BillReminderEntity implements BillReminder {
+public class BillReminderEntity extends Auditable implements BillReminder {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -40,9 +43,11 @@ public class BillReminderEntity implements BillReminder {
     @Column(name = "is_paid")
     private Boolean isPaid;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 }

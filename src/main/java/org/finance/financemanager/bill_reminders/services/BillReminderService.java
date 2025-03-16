@@ -14,12 +14,14 @@ import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.repositories.BillReminderRepository;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -101,12 +103,10 @@ public class BillReminderService {
             newBillReminder.setReceivedDate(billReminderRequest.getReceivedDate());
             newBillReminder.setDueDate(billReminderRequest.getDueDate());
             newBillReminder.setIsPaid(false);
-            newBillReminder.setCreated(LocalDateTime.now());
-            newBillReminder.setUpdated(LocalDateTime.now());
             newBillReminder.setUser(user);
-            repository.save(newBillReminder);
+            BillReminderEntity savedBillReminder = repository.save(newBillReminder);
 
-            transactionService.createTransactionFromBillReminder(newBillReminder);
+            transactionService.createTransactionFromBillReminder(savedBillReminder);
 
             BillReminderResponseDto response = formatBillReminderResponse(newBillReminder);
             response.setMessage("Bill reminder has been successfully created");
@@ -124,7 +124,6 @@ public class BillReminderService {
             if (billReminderRequest.getAmount() != null) { updatedBillReminder.setAmount(billReminderRequest.getAmount()); }
             if (billReminderRequest.getReceivedDate() != null) { updatedBillReminder.setReceivedDate(billReminderRequest.getReceivedDate()); }
             if (billReminderRequest.getDueDate() != null) { updatedBillReminder.setDueDate(billReminderRequest.getDueDate()); }
-            updatedBillReminder.setUpdated(LocalDateTime.now());
             repository.save(updatedBillReminder);
 
             BillReminderResponseDto response = formatBillReminderResponse(updatedBillReminder);
@@ -136,16 +135,18 @@ public class BillReminderService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteBillReminder(String billReminderId) {
+    public ResponseEntity<SuccessResponseDto> deleteBillReminder(String billReminderId) {
         try {
             BillReminderEntity billReminder = getBillReminder(billReminderId);
             repository.delete(billReminder);
 
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(billReminderId);
-            response.setMessage("Bill reminder has been successfully deleted");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.CREATED.value())
+                        .message("Bill reminder has been successfully deleted.")
+                        .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                        .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting bill reminder: " + billReminderId, e);
         }
@@ -175,7 +176,6 @@ public class BillReminderService {
         try {
             BillReminderEntity updatedBill = getBillReminder(billReminderId);
             updatedBill.setIsPaid(!updatedBill.getIsPaid());
-            updatedBill.setUpdated(LocalDateTime.now());
             BillReminderPayResponse response = new BillReminderPayResponse();
             response.setPaymentStatus(updatedBill.getIsPaid());
             response.setMessage("Bill reminder has been successfully updated");

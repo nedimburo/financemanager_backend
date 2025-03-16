@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.auth.payloads.FirebaseUpdateResponseDto;
 import org.finance.financemanager.accessibility.auth.services.FirebaseAuthService;
@@ -20,12 +19,14 @@ import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.exceptions.*;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,12 +51,10 @@ public class UserService {
     }
 
     @Transactional
-    @SneakyThrows
-    public ResponseEntity<?> register(HttpServletRequest request, RegistrationRequestDto registrationRequest){
-        String tokenHeader = request.getHeader("Token");
+    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, RegistrationRequestDto registrationRequest) throws Exception {
+        String tokenHeader = request.getHeader("Authorization");
         if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Token header missing or not properly formatted.");
+            throw new BadRequestException("Token header missing or not properly formatted.");
         }
 
         String token = tokenHeader.substring(7);
@@ -64,8 +63,7 @@ public class UserService {
             String userId = decodedToken.getUid();
 
             if (repository.existsById(userId)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("User profile already exists.");
+                throw new ResourceAlreadyExistsException("User profile with ID: " + userId + " already exists.");
             }
 
             UserEntity newUser = new UserEntity();
@@ -74,55 +72,73 @@ public class UserService {
             newUser.setFirstName(registrationRequest.getFirstName());
             newUser.setLastName(registrationRequest.getLastName());
             newUser.setRole(roleService.findByName(CLIENT));
-            newUser.setCreated(LocalDateTime.now());
-            newUser.setUpdated(LocalDateTime.now());
-            repository.save(newUser);
+            UserEntity savedUser = repository.save(newUser);
 
             RegistrationResponseDto response = new RegistrationResponseDto();
-            response.setEmail(newUser.getEmail());
-            response.setFirstName(newUser.getFirstName());
-            response.setLastName(newUser.getLastName());
-            response.setRole(newUser.getRole().getName());
-            response.setRegistrationDate(newUser.getCreated().toString());
+            response.setEmail(savedUser.getEmail());
+            response.setFirstName(savedUser.getFirstName());
+            response.setLastName(savedUser.getLastName());
+            response.setRole(savedUser.getRole().getName());
+            response.setRegistrationDate(savedUser.getCreated().toString());
             response.setMessage("User has been successfully registered.");
             return ResponseEntity.status(HttpStatus.OK)
                     .body(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid or expired token", e);
+        } catch (FirebaseAuthException e) {
+            throw new Exception("Invalid or expired token: " + e.getMessage());
         }
     }
 
     @Transactional
-    public ResponseEntity<UserProfileResponseDto> getUserProfile() {
+    public ResponseEntity<UserProfileResponseDto> getUserProfile() throws Exception {
+        String uid;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = getUser(uid);
-            UserProfileResponseDto profileResponse = new UserProfileResponseDto();
-            profileResponse.setUserId(user.getId());
-            profileResponse.setEmail(user.getEmail());
-            profileResponse.setFirstName(user.getFirstName());
-            profileResponse.setLastName(user.getLastName());
-            profileResponse.setRole(user.getRole().getName());
-            profileResponse.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-            return ResponseEntity.ok(profileResponse);
+           uid = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error while getting user profile data: ", e);
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        UserEntity user;
+        try {
+            user = getUser(uid);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("User with ID: " + uid + " doesn't exist");
+        }
+
+        try {
+            UserProfileResponseDto responseDto = new UserProfileResponseDto();
+            responseDto.setUserId(user.getId());
+            responseDto.setEmail(user.getEmail());
+            responseDto.setFirstName(user.getFirstName());
+            responseDto.setLastName(user.getLastName());
+            responseDto.setRole(user.getRole().getName());
+            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(responseDto);
+        } catch (Exception e) {
+            throw new Exception("Error while getting user profile data: ", e);
         }
     }
 
     @Transactional
     public ResponseEntity<UserResponseDto> getUserById(String userId) {
+        UserEntity user;
         try {
-            UserEntity user = getUser(userId);
-            UserResponseDto response = new UserResponseDto();
-            response.setUserId(user.getId());
-            response.setEmail(user.getEmail());
-            response.setFirstName(user.getFirstName());
-            response.setLastName(user.getLastName());
-            response.setRole(user.getRole().getName());
-            response.setNumberOfTransactions(user.getTransactions().size());
-            response.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-            return ResponseEntity.ok(response);
+            user = getUser(userId);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        try {
+            UserResponseDto responseDto = new UserResponseDto();
+            responseDto.setUserId(user.getId());
+            responseDto.setEmail(user.getEmail());
+            responseDto.setFirstName(user.getFirstName());
+            responseDto.setLastName(user.getLastName());
+            responseDto.setRole(user.getRole().getName());
+            responseDto.setNumberOfTransactions(user.getTransactions().size());
+            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(responseDto);
         } catch (Exception e) {
             throw new RuntimeException("Error while getting user: ", e);
         }
@@ -214,16 +230,19 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteUser(String userId) {
+    public ResponseEntity<SuccessResponseDto> deleteUser(String userId) {
         try {
             UserEntity user = getUser(userId);
             firebaseAuthService.deleteUser(user.getId());
             repository.deleteById(user.getId());
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(userId);
-            response.setMessage("User has been deleted successfully.");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("User has been deleted successfully.")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e) {
             throw new RuntimeException("Error while deleting user: ", e);
         }
@@ -255,5 +274,9 @@ public class UserService {
     public UserEntity getUser(String userId) {
         return repository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+    }
+
+    public Boolean doesUserExist(String userId) {
+        return repository.existsById(userId);
     }
 }

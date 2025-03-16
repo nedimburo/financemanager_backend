@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
+import org.finance.financemanager.common.entities.Auditable;
 import org.finance.financemanager.investments.Investment;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,7 +18,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "investments")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvestmentEntity implements Investment {
+public class InvestmentEntity extends Auditable implements Investment {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -44,9 +47,11 @@ public class InvestmentEntity implements Investment {
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 }

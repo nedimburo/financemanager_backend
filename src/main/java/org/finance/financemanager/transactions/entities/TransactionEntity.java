@@ -5,8 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
+import org.finance.financemanager.common.entities.Auditable;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.transactions.Transaction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,7 +19,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "transactions")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class TransactionEntity implements Transaction {
+public class TransactionEntity extends Auditable implements Transaction {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -43,9 +46,11 @@ public class TransactionEntity implements Transaction {
     @Column(name = "date")
     private LocalDateTime date;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
-    @Column(name = "updated")
+    @LastModifiedDate
+    @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 }

@@ -9,7 +9,7 @@ import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.services.BudgetService;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -63,7 +63,7 @@ public class ClientBudgetController {
     }
 
     @DeleteMapping("/{budgetId}")
-    public ResponseEntity<DeleteResponseDto> deleteBudget(@PathVariable String budgetId) {
+    public ResponseEntity<SuccessResponseDto> deleteBudget(@PathVariable String budgetId) {
         return service.deleteBudget(budgetId);
     }
 

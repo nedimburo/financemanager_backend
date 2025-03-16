@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
-import org.finance.financemanager.common.payloads.DeleteResponseDto;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.savings.entities.SavingEntity;
 import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
@@ -17,8 +17,10 @@ import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -99,12 +101,10 @@ public class SavingService {
             newSaving.setCurrentAmount(savingRequest.getCurrentAmount());
             newSaving.setStartDate(savingRequest.getStartDate());
             newSaving.setTargetDate(savingRequest.getTargetDate());
-            newSaving.setCreated(LocalDateTime.now());
-            newSaving.setUpdated(LocalDateTime.now());
             newSaving.setUser(user);
-            repository.save(newSaving);
+            SavingEntity savedSaving = repository.save(newSaving);
 
-            SavingResponseDto response = formatSavingResponse(newSaving);
+            SavingResponseDto response = formatSavingResponse(savedSaving);
             response.setMessage("Saving has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -121,7 +121,6 @@ public class SavingService {
             if (savingRequest.getCurrentAmount() != null) { updatedSaving.setCurrentAmount(savingRequest.getCurrentAmount()); }
             if (savingRequest.getStartDate() != null) { updatedSaving.setStartDate(savingRequest.getStartDate()); }
             if (savingRequest.getTargetDate() != null) { updatedSaving.setTargetDate(savingRequest.getTargetDate()); }
-            updatedSaving.setUpdated(LocalDateTime.now());
             repository.save(updatedSaving);
 
             SavingResponseDto response = formatSavingResponse(updatedSaving);
@@ -133,16 +132,18 @@ public class SavingService {
     }
 
     @Transactional
-    public ResponseEntity<DeleteResponseDto> deleteSaving(String savingId) {
+    public ResponseEntity<SuccessResponseDto> deleteSaving(String savingId) {
         try {
             SavingEntity saving = getSaving(savingId);
             repository.delete(saving);
 
-            DeleteResponseDto response = new DeleteResponseDto();
-            response.setId(savingId);
-            response.setMessage("Saving has been successfully deleted");
-            response.setRemovedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(SuccessResponseDto.builder()
+                            .timestamp(LocalDateTime.now())
+                            .status(HttpStatus.CREATED.value())
+                            .message("Saving has been deleted successfully.")
+                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                            .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting saving: " + savingId, e);
         }
@@ -172,7 +173,6 @@ public class SavingService {
         try {
             SavingEntity updatedSaving = getSaving(savingId);
             if (savedAmount != null) { updatedSaving.setCurrentAmount(savedAmount); }
-            updatedSaving.setUpdated(LocalDateTime.now());
             SavingAmountResponseDto response = new SavingAmountResponseDto();
             response.setCurrentAmount(updatedSaving.getCurrentAmount());
             response.setMessage("Saving has been successfully updated");

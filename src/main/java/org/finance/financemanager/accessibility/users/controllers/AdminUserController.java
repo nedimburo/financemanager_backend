@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
+import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class AdminUserController {
 
     private final UserService service;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/specific")
     public ResponseEntity<UserResponseDto> getUserById(@RequestParam String userId) {
         return service.getUserById(userId);
     }
@@ -67,7 +68,7 @@ public class AdminUserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable String userId){
+    public ResponseEntity<SuccessResponseDto> deleteUser(@PathVariable String userId){
         return service.deleteUser(userId);
     }
 }

@@ -4,13 +4,14 @@ import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
+public interface TransactionRepository extends JpaRepository<TransactionEntity, String>, JpaSpecificationExecutor<TransactionEntity> {
     Page<TransactionEntity> findAllByUserId(String userId, Pageable pageable);
     Page<TransactionEntity> findAllByUserIdAndDescriptionContainingIgnoreCase(String userId, String description, Pageable pageable);
     @Query("SELECT SUM(t.amount) FROM TransactionEntity t WHERE t.type = 'EXPENSE' AND t.user.id = :userId")
