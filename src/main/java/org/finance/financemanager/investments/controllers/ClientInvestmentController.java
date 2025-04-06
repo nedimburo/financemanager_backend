@@ -6,11 +6,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
+import org.finance.financemanager.investments.entities.InvestmentOrderBy;
+import org.finance.financemanager.investments.entities.InvestmentType;
 import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.services.InvestmentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,20 +32,16 @@ public class ClientInvestmentController {
     @GetMapping("/")
     public Page<InvestmentResponseDto> getUsersInvestments(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) InvestmentOrderBy orderBy,
+            @RequestParam(required = false) Boolean orderDirection,
+            @RequestParam(required = false)InvestmentType type
     ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.getUsersInvestments(pageable);
-    }
+        Sort.Direction direction = (orderDirection != null && orderDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, (orderBy != null) ? orderBy.getColumn() : "id"));
 
-    @GetMapping("/search")
-    public Page<InvestmentResponseDto> searchUsersInvestments(
-            @RequestParam String investmentName,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.searchUsersInvestments(investmentName, pageable);
+        return service.getUsersInvestments(pageable, query, type);
     }
 
     @GetMapping("/{investmentId}")
@@ -50,7 +49,7 @@ public class ClientInvestmentController {
         return service.getInvestmentById(investmentId);
     }
 
-    @PostMapping("/create")
+    @PostMapping("/")
     public ResponseEntity<InvestmentResponseDto> createInvestment(@RequestBody InvestmentRequestDto investmentRequest) {
         return service.createInvestment(investmentRequest);
     }

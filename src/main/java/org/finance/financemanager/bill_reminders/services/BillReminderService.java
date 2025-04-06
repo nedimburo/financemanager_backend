@@ -8,16 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
+import org.finance.financemanager.bill_reminders.mappers.BillReminderMapper;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.repositories.BillReminderRepository;
+import org.finance.financemanager.bill_reminders.specifications.BillReminderSpecification;
 import org.finance.financemanager.common.config.Auth;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,46 +39,27 @@ import java.util.UUID;
 public class BillReminderService {
 
     private final BillReminderRepository repository;
+    private final BillReminderMapper billReminderMapper;
     private final UserService userService;
     private final TransactionService transactionService;
 
     @Transactional
-    public Page<BillReminderResponseDto> getUsersBillReminders(Pageable pageable) {
+    public Page<BillReminderResponseDto> getUsersBillReminders(Pageable pageable, String query) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(billReminder -> new BillReminderResponseDto(
-                            billReminder.getId(),
-                            billReminder.getUser().getId(),
-                            billReminder.getBillName(),
-                            billReminder.getAmount(),
-                            billReminder.getReceivedDate().toString(),
-                            billReminder.getDueDate().toString(),
-                            billReminder.getIsPaid(),
-                            null,
-                            billReminder.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users bill reminders: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public Page<BillReminderResponseDto> searchUsersBillReminders(String billName, Pageable pageable){
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndBillNameContainingIgnoreCase(uid, billName, pageable)
-                    .map(billReminder -> new BillReminderResponseDto(
-                            billReminder.getId(),
-                            billReminder.getUser().getId(),
-                            billReminder.getBillName(),
-                            billReminder.getAmount(),
-                            billReminder.getReceivedDate().toString(),
-                            billReminder.getDueDate().toString(),
-                            billReminder.getIsPaid(),
-                            null,
-                            billReminder.getCreated().toString()
-                    ));
+            Specification<BillReminderEntity> spec = BillReminderSpecification.filterBillReminders(query, userId);
+            return repository.findAll(spec, pageable).map(billReminderMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users bill reminders: ", e);
         }
@@ -108,7 +94,7 @@ public class BillReminderService {
 
             transactionService.createTransactionFromBillReminder(savedBillReminder);
 
-            BillReminderResponseDto response = formatBillReminderResponse(newBillReminder);
+            BillReminderResponseDto response = formatBillReminderResponse(savedBillReminder);
             response.setMessage("Bill reminder has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {

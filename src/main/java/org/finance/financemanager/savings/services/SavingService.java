@@ -8,15 +8,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.savings.entities.SavingEntity;
+import org.finance.financemanager.savings.mappers.SavingMapper;
 import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingDetailsResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
+import org.finance.financemanager.savings.specifications.SavingSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,45 +38,26 @@ import java.util.UUID;
 public class SavingService {
 
     private final SavingRepository repository;
+    private final SavingMapper savingMapper;
     private final UserService userService;
 
     @Transactional
-    public Page<SavingResponseDto> getUsersSavings(Pageable pageable) {
+    public Page<SavingResponseDto> getUsersSavings(Pageable pageable, String query) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(saving -> new SavingResponseDto(
-                            saving.getId(),
-                            saving.getUser().getId(),
-                            saving.getGoalName(),
-                            saving.getTargetAmount(),
-                            saving.getCurrentAmount(),
-                            saving.getStartDate(),
-                            saving.getTargetDate(),
-                            null,
-                            saving.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users savings: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public Page<SavingResponseDto> searchUsersSavings(String goalName, Pageable pageable) {
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndGoalNameContainingIgnoreCase(uid, goalName, pageable)
-                    .map(saving -> new SavingResponseDto(
-                            saving.getId(),
-                            saving.getUser().getId(),
-                            saving.getGoalName(),
-                            saving.getTargetAmount(),
-                            saving.getCurrentAmount(),
-                            saving.getStartDate(),
-                            saving.getTargetDate(),
-                            null,
-                            saving.getCreated().toString()
-                    ));
+            Specification<SavingEntity> spec = SavingSpecification.filterTransactions(query, userId);
+            return repository.findAll(spec, pageable).map(savingMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users savings: ", e);
         }

@@ -8,15 +8,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.budgets.entities.BudgetEntity;
+import org.finance.financemanager.budgets.mappers.BudgetMapper;
 import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.repositories.BudgetRepository;
+import org.finance.financemanager.budgets.specifications.BudgetSpecification;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,45 +38,26 @@ import java.util.UUID;
 public class BudgetService {
 
     private final BudgetRepository repository;
+    private final BudgetMapper budgetMapper;
     private final UserService userService;
 
     @Transactional
-    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable) {
+    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(budget -> new BudgetResponseDto(
-                            budget.getId(),
-                            budget.getUser().getId(),
-                            budget.getBudgetName(),
-                            budget.getCategory().toString(),
-                            budget.getBudgetLimit(),
-                            budget.getStartDate().toString(),
-                            budget.getEndDate().toString(),
-                            null,
-                            budget.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users budgets: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public Page<BudgetResponseDto> searchUsersBudgets(String budgetName, Pageable pageable){
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndBudgetNameIsContainingIgnoreCase(uid, budgetName, pageable)
-                    .map(budget -> new BudgetResponseDto(
-                            budget.getId(),
-                            budget.getUser().getId(),
-                            budget.getBudgetName(),
-                            budget.getCategory().toString(),
-                            budget.getBudgetLimit(),
-                            budget.getStartDate().toString(),
-                            budget.getEndDate().toString(),
-                            null,
-                            budget.getCreated().toString()
-                    ));
+            Specification<BudgetEntity> spec = BudgetSpecification.filterBudgets(query, category, userId);
+            return repository.findAll(spec, pageable).map(budgetMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users budgets: ", e);
         }

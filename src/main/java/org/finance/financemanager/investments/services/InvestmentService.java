@@ -8,14 +8,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.investments.entities.InvestmentType;
+import org.finance.financemanager.investments.mappers.InvestmentMapper;
 import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.repositories.InvestmentRepository;
+import org.finance.financemanager.investments.specifications.InvestmentSpecification;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,48 +37,27 @@ import java.util.UUID;
 public class InvestmentService {
 
     private final InvestmentRepository repository;
+    private final InvestmentMapper investmentMapper;
     private final UserService userService;
     private final TransactionService transactionService;
 
     @Transactional
-    public Page<InvestmentResponseDto> getUsersInvestments(Pageable pageable) {
+    public Page<InvestmentResponseDto> getUsersInvestments(Pageable pageable, String query, InvestmentType type) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(investment -> new InvestmentResponseDto(
-                            investment.getId(),
-                            investment.getUser().getId(),
-                            investment.getType().toString(),
-                            investment.getInvestmentName(),
-                            investment.getAmountInvested(),
-                            investment.getCurrentValue(),
-                            investment.getInterestRate(),
-                            investment.getStartDate().toString(),
-                            null,
-                            investment.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users investments: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public Page<InvestmentResponseDto> searchUsersInvestments(String investmentName, Pageable pageable){
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndInvestmentNameContainingIgnoreCase(uid, investmentName, pageable)
-                    .map(investment -> new InvestmentResponseDto(
-                            investment.getId(),
-                            investment.getUser().getId(),
-                            investment.getType().toString(),
-                            investment.getInvestmentName(),
-                            investment.getAmountInvested(),
-                            investment.getCurrentValue(),
-                            investment.getInterestRate(),
-                            investment.getStartDate().toString(),
-                            null,
-                            investment.getCreated().toString()
-                    ));
+            Specification<InvestmentEntity> spec = InvestmentSpecification.filterInvestments(query, type, userId);
+            return repository.findAll(spec, pageable).map(investmentMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users investments: ", e);
         }
@@ -109,7 +93,7 @@ public class InvestmentService {
 
             transactionService.createTransactionFromInvestment(savedInvestment);
 
-            InvestmentResponseDto response = formatInvestmentResponse(newInvestment);
+            InvestmentResponseDto response = formatInvestmentResponse(savedInvestment);
             response.setMessage("Investment has been successfully created");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
