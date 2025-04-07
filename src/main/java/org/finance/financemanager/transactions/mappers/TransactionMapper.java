@@ -1,6 +1,7 @@
 package org.finance.financemanager.transactions.mappers;
 
 import org.finance.financemanager.transactions.entities.TransactionEntity;
+import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface TransactionMapper {
             @Mapping(source = "created", target = "createdDate")
     })
     TransactionResponseDto toDto(TransactionEntity transaction);
+
+    TransactionEntity toEntity(TransactionRequestDto request);
 }

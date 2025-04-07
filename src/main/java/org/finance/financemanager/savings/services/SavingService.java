@@ -64,42 +64,55 @@ public class SavingService {
     }
 
     @Transactional
-    public ResponseEntity<SavingResponseDto> getSavingById(String savingId) {
+    public SavingResponseDto getSavingById(String savingId) {
+        String userId;
         try {
-            SavingEntity saving = getSaving(savingId);
-            SavingResponseDto response = formatSavingResponse(saving);
-            return ResponseEntity.ok(response);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        SavingEntity saving = getSaving(savingId);
+
+        try {
+            return savingMapper.toDto(saving);
         } catch (Exception e){
             throw new RuntimeException("Error getting saving by id: " + savingId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<SavingResponseDto> createSaving(SavingRequestDto savingRequest) {
+    public SavingResponseDto createSaving(SavingRequestDto savingRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
 
-            SavingEntity newSaving = new SavingEntity();
+        UserEntity user = userService.getUser(userId);
+
+        try {
+            SavingEntity newSaving = savingMapper.toEntity(savingRequest);
             newSaving.setId(UUID.randomUUID().toString());
-            newSaving.setGoalName(savingRequest.getGoalName());
-            newSaving.setTargetAmount(savingRequest.getTargetAmount());
-            newSaving.setCurrentAmount(savingRequest.getCurrentAmount());
-            newSaving.setStartDate(savingRequest.getStartDate());
-            newSaving.setTargetDate(savingRequest.getTargetDate());
             newSaving.setUser(user);
             SavingEntity savedSaving = repository.save(newSaving);
 
-            SavingResponseDto response = formatSavingResponse(savedSaving);
+            SavingResponseDto response = savingMapper.toDto(savedSaving);
             response.setMessage("Saving has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating saving: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<SavingResponseDto> updateSaving(String savingId, SavingRequestDto savingRequest) {
+    public SavingResponseDto updateSaving(String savingId, SavingRequestDto savingRequest) {
         try {
             SavingEntity updatedSaving = getSaving(savingId);
             if (savingRequest.getGoalName() != null) { updatedSaving.setGoalName(savingRequest.getGoalName()); }
@@ -109,9 +122,9 @@ public class SavingService {
             if (savingRequest.getTargetDate() != null) { updatedSaving.setTargetDate(savingRequest.getTargetDate()); }
             repository.save(updatedSaving);
 
-            SavingResponseDto response = formatSavingResponse(updatedSaving);
+            SavingResponseDto response = savingMapper.toDto(updatedSaving);
             response.setMessage("Saving has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating saving: ", e);
         }
@@ -168,19 +181,6 @@ public class SavingService {
         } catch (Exception e) {
             throw new RuntimeException("Error editing saved amount for saving: ", e);
         }
-    }
-
-    private SavingResponseDto formatSavingResponse(SavingEntity saving) {
-        SavingResponseDto response = new SavingResponseDto();
-        response.setSavingId(saving.getId());
-        response.setUserId(saving.getUser().getId());
-        response.setGoalName(saving.getGoalName());
-        response.setTargetAmount(saving.getTargetAmount() != null ? saving.getTargetAmount() : BigDecimal.ZERO);
-        response.setCurrentAmount(saving.getCurrentAmount() != null ? saving.getCurrentAmount() : BigDecimal.ZERO);
-        response.setStartDate(saving.getStartDate());
-        response.setTargetDate(saving.getTargetDate());
-        response.setCreatedDate(saving.getCreated().toString());
-        return response;
     }
 
     public SavingEntity getSaving(String savingId) {

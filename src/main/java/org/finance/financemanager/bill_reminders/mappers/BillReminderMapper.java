@@ -1,6 +1,7 @@
 package org.finance.financemanager.bill_reminders.mappers;
 
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface BillReminderMapper {
             @Mapping(source = "created", target = "createdDate")
     })
     BillReminderResponseDto toDto(BillReminderEntity billReminder);
+
+    BillReminderEntity toEntity(BillReminderRequestDto request);
 }

@@ -36,8 +36,8 @@ public class FileCreatorService {
         for (TransactionResponseDto transaction : selectedTransactions) {
             csvContent.append(String.join(",",
                     transaction.getDescription(),
-                    transaction.getType(),
-                    transaction.getCategory(),
+                    transaction.getType().toString(),
+                    transaction.getCategory().toString(),
                     transaction.getAmount().toString() + "€",
                     transaction.getDate(),
                     transaction.getCreatedDate()
@@ -70,8 +70,8 @@ public class FileCreatorService {
         for (TransactionResponseDto transaction : selectedTransactions) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(transaction.getDescription());
-            row.createCell(1).setCellValue(transaction.getType());
-            row.createCell(2).setCellValue(transaction.getCategory());
+            row.createCell(1).setCellValue(transaction.getType().toString());
+            row.createCell(2).setCellValue(transaction.getCategory().toString());
             row.createCell(3).setCellValue(transaction.getAmount().toString() + "€");
             row.createCell(4).setCellValue(transaction.getDate());
             row.createCell(5).setCellValue(transaction.getCreatedDate());

@@ -1,6 +1,7 @@
 package org.finance.financemanager.savings.mappers;
 
 import org.finance.financemanager.savings.entities.SavingEntity;
+import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface SavingMapper {
             @Mapping(source = "created", target = "createdDate")
     })
     SavingResponseDto toDto(SavingEntity saving);
+
+    SavingEntity toEntity(SavingRequestDto request);
 }

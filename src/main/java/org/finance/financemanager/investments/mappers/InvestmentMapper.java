@@ -1,6 +1,7 @@
 package org.finance.financemanager.investments.mappers;
 
 import org.finance.financemanager.investments.entities.InvestmentEntity;
+import org.finance.financemanager.investments.payloads.InvestmentRequestDto;
 import org.finance.financemanager.investments.payloads.InvestmentResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface InvestmentMapper {
             @Mapping(source = "created", target = "createdDate")
     })
     InvestmentResponseDto toDto(InvestmentEntity investment);
+
+    InvestmentEntity toEntity(InvestmentRequestDto request);
 }

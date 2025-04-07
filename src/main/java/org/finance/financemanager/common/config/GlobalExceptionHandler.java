@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.config;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.finance.financemanager.common.exceptions.*;
 import org.finance.financemanager.common.payloads.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
@@ -73,6 +74,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFound(ResourceNotFoundException ex, WebRequest request) {
+        return new ResponseEntity<>(
+                ErrorResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .message(ex.getMessage())
+                        .path(request.getDescription(false))
+                        .build(),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
         return new ResponseEntity<>(
                 ErrorResponseDto.builder()
                         .timestamp(LocalDateTime.now())

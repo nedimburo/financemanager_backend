@@ -64,48 +64,59 @@ public class InvestmentService {
     }
 
     @Transactional
-    public ResponseEntity<InvestmentResponseDto> getInvestmentById(String investmentId) {
+    public InvestmentResponseDto getInvestmentById(String investmentId) {
+        String userId;
         try {
-            InvestmentEntity investment = getInvestment(investmentId);
-            InvestmentResponseDto response = formatInvestmentResponse(investment);
-            return ResponseEntity.ok(response);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+        InvestmentEntity investment = getInvestment(investmentId);
+
+        try {
+            return investmentMapper.toDto(investment);
         } catch (Exception e){
             throw new RuntimeException("Error getting investment by id: " + investmentId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<InvestmentResponseDto> createInvestment(InvestmentRequestDto investmentRequest) {
+    public InvestmentResponseDto createInvestment(InvestmentRequestDto investmentRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
 
-            InvestmentEntity newInvestment = new InvestmentEntity();
+        UserEntity user = userService.getUser(userId);
+
+        try {
+            InvestmentEntity newInvestment = investmentMapper.toEntity(investmentRequest);
             newInvestment.setId(UUID.randomUUID().toString());
-            newInvestment.setType(InvestmentType.valueOf(investmentRequest.getType()));
-            newInvestment.setInvestmentName(investmentRequest.getInvestmentName());
-            newInvestment.setAmountInvested(investmentRequest.getAmountInvested());
-            newInvestment.setCurrentValue(investmentRequest.getCurrentValue());
-            newInvestment.setInterestRate(investmentRequest.getInterestRate());
-            newInvestment.setStartDate(investmentRequest.getStartDate());
             newInvestment.setUser(user);
             InvestmentEntity savedInvestment = repository.save(newInvestment);
 
             transactionService.createTransactionFromInvestment(savedInvestment);
 
-            InvestmentResponseDto response = formatInvestmentResponse(savedInvestment);
+            InvestmentResponseDto response = investmentMapper.toDto(savedInvestment);
             response.setMessage("Investment has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating investment: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<InvestmentResponseDto> updateInvestment(String investmentId, InvestmentRequestDto investmentRequest) {
+    public InvestmentResponseDto updateInvestment(String investmentId, InvestmentRequestDto investmentRequest) {
         try {
             InvestmentEntity updatedInvestment = getInvestment(investmentId);
-            if (investmentRequest.getType() != null) { updatedInvestment.setType(InvestmentType.valueOf(investmentRequest.getType())); }
+            if (investmentRequest.getType() != null) { updatedInvestment.setType(investmentRequest.getType()); }
             if (investmentRequest.getInvestmentName() != null) { updatedInvestment.setInvestmentName(investmentRequest.getInvestmentName()); }
             if (investmentRequest.getAmountInvested() != null) { updatedInvestment.setAmountInvested(investmentRequest.getAmountInvested()); }
             if (investmentRequest.getCurrentValue() != null) { updatedInvestment.setCurrentValue(investmentRequest.getCurrentValue()); }
@@ -113,9 +124,9 @@ public class InvestmentService {
             if (investmentRequest.getStartDate() != null) { updatedInvestment.setStartDate(investmentRequest.getStartDate()); }
             repository.save(updatedInvestment);
 
-            InvestmentResponseDto response = formatInvestmentResponse(updatedInvestment);
+            InvestmentResponseDto response = investmentMapper.toDto(updatedInvestment);
             response.setMessage("Investment has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating investment: ", e);
         }
@@ -180,20 +191,6 @@ public class InvestmentService {
         } catch (Exception e) {
             throw new RuntimeException("Error while updating investment values: ", e);
         }
-    }
-
-    private InvestmentResponseDto formatInvestmentResponse(InvestmentEntity investment) {
-        InvestmentResponseDto response = new InvestmentResponseDto();
-        response.setInvestmentId(investment.getId());
-        response.setUserId(investment.getUser().getId());
-        response.setType(investment.getType().toString());
-        response.setInvestmentName(investment.getInvestmentName());
-        response.setAmountInvested(investment.getAmountInvested() != null ? investment.getAmountInvested() : BigDecimal.ZERO);
-        response.setCurrentValue(investment.getCurrentValue() != null ? investment.getCurrentValue() : BigDecimal.ZERO);
-        response.setInterestRate(investment.getInterestRate() != null ? investment.getInterestRate() : 0);
-        response.setStartDate(investment.getStartDate().toString());
-        response.setCreatedDate(investment.getCreated().toString());
-        return response;
     }
 
     public InvestmentEntity getInvestment(String investmentId) {

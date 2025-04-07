@@ -52,18 +52,18 @@ public class ClientTransactionController {
         return service.getUsersTransactions(pageable, query, type, category);
     }
 
-    @GetMapping("/{transactionId}")
-    public ResponseEntity<TransactionResponseDto> getTransactionById(@PathVariable String transactionId) {
+    @GetMapping("/specific")
+    public TransactionResponseDto getTransactionById(@RequestParam String transactionId) {
         return service.getTransactionById(transactionId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<TransactionResponseDto> createTransaction(@RequestBody TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto createTransaction(@RequestBody TransactionRequestDto transactionRequest) {
         return service.createTransaction(transactionRequest);
     }
 
     @PatchMapping("/{transactionId}")
-    public ResponseEntity<TransactionResponseDto> updateTransaction(@PathVariable String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto updateTransaction(@PathVariable String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
         return service.updateTransaction(transactionId, transactionRequest);
     }
 

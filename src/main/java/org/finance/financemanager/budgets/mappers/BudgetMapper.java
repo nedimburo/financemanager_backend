@@ -1,6 +1,7 @@
 package org.finance.financemanager.budgets.mappers;
 
 import org.finance.financemanager.budgets.entities.BudgetEntity;
+import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +18,6 @@ public interface BudgetMapper {
             @Mapping(source = "created", target = "createdDate")
     })
     BudgetResponseDto toDto(BudgetEntity budget);
+
+    BudgetEntity toEntity(BudgetRequestDto request);
 }

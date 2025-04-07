@@ -47,18 +47,18 @@ public class ClientSavingController {
         return service.getUsersSavings(pageable, query);
     }
 
-    @GetMapping("/{savingId}")
-    public ResponseEntity<SavingResponseDto> getSavingById(@PathVariable String savingId) {
+    @GetMapping("/specific")
+    public SavingResponseDto getSavingById(@RequestParam String savingId) {
         return service.getSavingById(savingId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<SavingResponseDto> createSaving(@RequestBody SavingRequestDto savingRequest) {
+    public SavingResponseDto createSaving(@RequestBody SavingRequestDto savingRequest) {
         return service.createSaving(savingRequest);
     }
 
     @PatchMapping("/{savingId}")
-    public ResponseEntity<SavingResponseDto> updateSaving(@PathVariable String savingId , @RequestBody SavingRequestDto savingRequest) {
+    public SavingResponseDto updateSaving(@PathVariable String savingId , @RequestBody SavingRequestDto savingRequest) {
         return service.updateSaving(savingId, savingRequest);
     }
 

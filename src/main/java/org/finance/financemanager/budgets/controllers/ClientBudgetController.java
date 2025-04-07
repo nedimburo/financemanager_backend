@@ -46,18 +46,18 @@ public class ClientBudgetController {
         return service.getUsersBudgets(pageable, query, category);
     }
 
-    @GetMapping("/{budgetId}")
-    public ResponseEntity<BudgetResponseDto> getBudgetById(@PathVariable String budgetId) {
+    @GetMapping("/specific")
+    public BudgetResponseDto getBudgetById(@RequestParam String budgetId) {
         return service.getBudgetById(budgetId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<BudgetResponseDto> createBudget(@RequestBody BudgetRequestDto budgetRequest) {
+    public BudgetResponseDto createBudget(@RequestBody BudgetRequestDto budgetRequest) {
         return service.createBudget(budgetRequest);
     }
 
     @PatchMapping("/{budgetId}")
-    public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
+    public BudgetResponseDto updateBudget(@PathVariable String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
         return service.updateBudget(budgetId, budgetRequest);
     }
 

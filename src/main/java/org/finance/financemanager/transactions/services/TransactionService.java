@@ -76,54 +76,61 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> getTransactionById(String transactionId) {
+    public TransactionResponseDto getTransactionById(String transactionId) {
+        String userId;
         try {
-            TransactionEntity transaction = getTransaction(transactionId);
-            TransactionResponseDto response = formatTransactionResponse(transaction);
-            return ResponseEntity.ok(response);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        TransactionEntity transaction = getTransaction(transactionId);
+
+        try {
+            return transactionMapper.toDto(transaction);
         } catch (Exception e){
             throw new RuntimeException("Error getting transaction by id: " + transactionId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> createTransaction(TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto createTransaction(TransactionRequestDto transactionRequest) {
         try {
             String uid = Auth.getUserId();
             UserEntity user = userService.getUser(uid);
 
-            TransactionEntity newTransaction = new TransactionEntity();
+            TransactionEntity newTransaction = transactionMapper.toEntity(transactionRequest);
             newTransaction.setId(UUID.randomUUID().toString());
-            newTransaction.setType(TransactionType.valueOf(transactionRequest.getType()));
-            newTransaction.setCategory(FinanceCategory.valueOf(transactionRequest.getCategory()));
-            newTransaction.setAmount(transactionRequest.getAmount());
-            newTransaction.setDescription(transactionRequest.getDescription());
-            newTransaction.setDate(transactionRequest.getDate());
             newTransaction.setUser(user);
             TransactionEntity savedTransaction = repository.save(newTransaction);
 
-            TransactionResponseDto response = formatTransactionResponse(savedTransaction);
+            TransactionResponseDto response = transactionMapper.toDto(savedTransaction);
             response.setMessage("Transaction has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating transaction: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
         try {
             TransactionEntity updatedTransaction = getTransaction(transactionId);
-            if (transactionRequest.getType() != null) { updatedTransaction.setType(TransactionType.valueOf(transactionRequest.getType())); }
-            if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(FinanceCategory.valueOf(transactionRequest.getCategory())); }
+            if (transactionRequest.getType() != null) { updatedTransaction.setType(transactionRequest.getType()); }
+            if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(transactionRequest.getCategory()); }
             if (transactionRequest.getAmount() != null) { updatedTransaction.setAmount(transactionRequest.getAmount()); }
             if (transactionRequest.getDescription() != null) { updatedTransaction.setDescription(transactionRequest.getDescription()); }
             if (transactionRequest.getDate() != null) { updatedTransaction.setDate(transactionRequest.getDate()); }
             repository.save(updatedTransaction);
 
-            TransactionResponseDto response = formatTransactionResponse(updatedTransaction);
+            TransactionResponseDto response = transactionMapper.toDto(updatedTransaction);
             response.setMessage("Transaction has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating transaction: ", e);
         }
@@ -185,7 +192,7 @@ public class TransactionService {
                 filteredTransactions = repository.findAll();
             }
             return filteredTransactions.stream()
-                    .map(this::formatTransactionResponse)
+                    .map(transactionMapper::toDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
@@ -206,7 +213,7 @@ public class TransactionService {
             } else {
                 filteredTransactions = repository.findAllByUserId(uid, pageable);
             }
-            return filteredTransactions.map(this::formatTransactionResponse);
+            return filteredTransactions.map(transactionMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
         }
@@ -247,19 +254,6 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("Error getting expense and income for each month: " + year, e);
         }
-    }
-
-    private TransactionResponseDto formatTransactionResponse(TransactionEntity transaction) {
-        TransactionResponseDto response = new TransactionResponseDto();
-        response.setTransactionId(transaction.getId());
-        response.setUserId(transaction.getUser().getId());
-        response.setType(transaction.getType().toString());
-        response.setCategory(transaction.getCategory().toString());
-        response.setAmount(transaction.getAmount() != null ? transaction.getAmount() : BigDecimal.ZERO);
-        response.setDescription(transaction.getDescription());
-        response.setDate(transaction.getDate().toString());
-        response.setCreatedDate(transaction.getCreated().toString());
-        return response;
     }
 
     public void createTransactionFromBillReminder(BillReminderEntity billReminder) {

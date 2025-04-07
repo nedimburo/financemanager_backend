@@ -44,18 +44,18 @@ public class ClientInvestmentController {
         return service.getUsersInvestments(pageable, query, type);
     }
 
-    @GetMapping("/{investmentId}")
-    public ResponseEntity<InvestmentResponseDto> getInvestmentById(@PathVariable String investmentId) {
+    @GetMapping("/specific")
+    public InvestmentResponseDto getInvestmentById(@RequestParam String investmentId) {
         return service.getInvestmentById(investmentId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<InvestmentResponseDto> createInvestment(@RequestBody InvestmentRequestDto investmentRequest) {
+    public InvestmentResponseDto createInvestment(@RequestBody InvestmentRequestDto investmentRequest) {
         return service.createInvestment(investmentRequest);
     }
 
     @PatchMapping("/{investmentId}")
-    public ResponseEntity<InvestmentResponseDto> updateInvestment(@PathVariable String investmentId , @RequestBody InvestmentRequestDto investmentRequest) {
+    public InvestmentResponseDto updateInvestment(@PathVariable String investmentId , @RequestBody InvestmentRequestDto investmentRequest) {
         return service.updateInvestment(investmentId, investmentRequest);
     }
 

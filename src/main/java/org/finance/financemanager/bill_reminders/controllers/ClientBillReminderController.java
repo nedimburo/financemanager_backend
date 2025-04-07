@@ -45,18 +45,18 @@ public class ClientBillReminderController {
         return service.getUsersBillReminders(pageable, query);
     }
 
-    @GetMapping("/{billReminderId}")
-    public ResponseEntity<BillReminderResponseDto> getBillReminderById(@PathVariable String billReminderId) {
+    @GetMapping("/specific")
+    public BillReminderResponseDto getBillReminderById(@RequestParam String billReminderId) {
         return service.getBillReminderById(billReminderId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<BillReminderResponseDto> createBillReminder(@RequestBody BillReminderRequestDto billReminderRequest) {
+    public BillReminderResponseDto createBillReminder(@RequestBody BillReminderRequestDto billReminderRequest) {
         return service.createBillReminder(billReminderRequest);
     }
 
     @PatchMapping("/{billReminderId}")
-    public ResponseEntity<BillReminderResponseDto> updateBillReminder(@PathVariable String billReminderId , @RequestBody BillReminderRequestDto billReminderRequest) {
+    public BillReminderResponseDto updateBillReminder(@PathVariable String billReminderId , @RequestBody BillReminderRequestDto billReminderRequest) {
         return service.updateBillReminder(billReminderId, billReminderRequest);
     }
 

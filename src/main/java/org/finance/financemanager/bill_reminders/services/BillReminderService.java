@@ -66,44 +66,58 @@ public class BillReminderService {
     }
 
     @Transactional
-    public ResponseEntity<BillReminderResponseDto> getBillReminderById(String billReminderId) {
+    public BillReminderResponseDto getBillReminderById(String billReminderId) {
+        String userId;
         try {
-            BillReminderEntity billReminder = getBillReminder(billReminderId);
-            BillReminderResponseDto response = formatBillReminderResponse(billReminder);
-            return ResponseEntity.ok(response);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        BillReminderEntity billReminder = getBillReminder(billReminderId);
+
+        try {
+            return billReminderMapper.toDto(billReminder);
         } catch (Exception e){
             throw new RuntimeException("Error getting bill reminder by id: " + billReminderId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<BillReminderResponseDto> createBillReminder(BillReminderRequestDto billReminderRequest) {
+    public BillReminderResponseDto createBillReminder(BillReminderRequestDto billReminderRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
 
-            BillReminderEntity newBillReminder = new BillReminderEntity();
+        UserEntity user = userService.getUser(userId);
+
+        try {
+            BillReminderEntity newBillReminder = billReminderMapper.toEntity(billReminderRequest);
             newBillReminder.setId(UUID.randomUUID().toString());
-            newBillReminder.setBillName(billReminderRequest.getBillName());
-            newBillReminder.setAmount(billReminderRequest.getAmount());
-            newBillReminder.setReceivedDate(billReminderRequest.getReceivedDate());
-            newBillReminder.setDueDate(billReminderRequest.getDueDate());
             newBillReminder.setIsPaid(false);
             newBillReminder.setUser(user);
             BillReminderEntity savedBillReminder = repository.save(newBillReminder);
 
             transactionService.createTransactionFromBillReminder(savedBillReminder);
 
-            BillReminderResponseDto response = formatBillReminderResponse(savedBillReminder);
+            BillReminderResponseDto response = billReminderMapper.toDto(savedBillReminder);
             response.setMessage("Bill reminder has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating bill reminder: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<BillReminderResponseDto> updateBillReminder(String billReminderId, BillReminderRequestDto billReminderRequest) {
+    public BillReminderResponseDto updateBillReminder(String billReminderId, BillReminderRequestDto billReminderRequest) {
         try {
             BillReminderEntity updatedBillReminder = getBillReminder(billReminderId);
             if (billReminderRequest.getBillName() != null) { updatedBillReminder.setBillName(billReminderRequest.getBillName()); }
@@ -112,9 +126,9 @@ public class BillReminderService {
             if (billReminderRequest.getDueDate() != null) { updatedBillReminder.setDueDate(billReminderRequest.getDueDate()); }
             repository.save(updatedBillReminder);
 
-            BillReminderResponseDto response = formatBillReminderResponse(updatedBillReminder);
+            BillReminderResponseDto response = billReminderMapper.toDto(updatedBillReminder);
             response.setMessage("Bill reminder has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating bill reminder: ", e);
         }
@@ -171,19 +185,6 @@ public class BillReminderService {
         } catch (Exception e) {
             throw new RuntimeException("Error updating bill reminder payment details: ", e);
         }
-    }
-
-    private BillReminderResponseDto formatBillReminderResponse(BillReminderEntity billReminder) {
-        BillReminderResponseDto response = new BillReminderResponseDto();
-        response.setBillReminderId(billReminder.getId());
-        response.setUserId(billReminder.getUser().getId());
-        response.setBillName(billReminder.getBillName());
-        response.setAmount(billReminder.getAmount() != null ? billReminder.getAmount() : BigDecimal.ZERO);
-        response.setReceivedDate(billReminder.getReceivedDate().toString());
-        response.setDueDate(billReminder.getDueDate().toString());
-        response.setIsPaid(billReminder.getIsPaid());
-        response.setCreatedDate(billReminder.getCreated().toString());
-        return response;
     }
 
     public BillReminderEntity getBillReminder(String billReminderId) {
