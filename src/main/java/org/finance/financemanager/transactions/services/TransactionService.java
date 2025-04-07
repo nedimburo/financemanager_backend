@@ -100,10 +100,16 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponseDto createTransaction(TransactionRequestDto transactionRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
 
+        UserEntity user = userService.getUser(userId);
+
+        try {
             TransactionEntity newTransaction = transactionMapper.toEntity(transactionRequest);
             newTransaction.setId(UUID.randomUUID().toString());
             newTransaction.setUser(user);
