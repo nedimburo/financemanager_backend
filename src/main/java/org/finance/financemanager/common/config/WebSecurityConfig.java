@@ -44,7 +44,9 @@ public class WebSecurityConfig {
         http.cors(config -> corsConfigurationSource())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/public/**", "/actuator/**").permitAll()
+                        .requestMatchers("/public/**", "/actuator/**", "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
                         .requestMatchers("/common/**").authenticated()
                         .requestMatchers("/client/**").hasAuthority(RoleName.CLIENT.name())
                         .requestMatchers("/admin/**").hasAuthority(RoleName.ADMIN.name())
