@@ -56,13 +56,13 @@ public class ClientBudgetController {
         return service.createBudget(budgetRequest);
     }
 
-    @PatchMapping("/{budgetId}")
-    public BudgetResponseDto updateBudget(@PathVariable String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
+    @PatchMapping("/")
+    public BudgetResponseDto updateBudget(@RequestParam String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
         return service.updateBudget(budgetId, budgetRequest);
     }
 
-    @DeleteMapping("/{budgetId}")
-    public ResponseEntity<SuccessResponseDto> deleteBudget(@PathVariable String budgetId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteBudget(@RequestParam String budgetId) {
         return service.deleteBudget(budgetId);
     }
 

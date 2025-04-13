@@ -62,13 +62,13 @@ public class ClientTransactionController {
         return service.createTransaction(transactionRequest);
     }
 
-    @PatchMapping("/{transactionId}")
-    public TransactionResponseDto updateTransaction(@PathVariable String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
+    @PatchMapping("/")
+    public TransactionResponseDto updateTransaction(@RequestParam String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
         return service.updateTransaction(transactionId, transactionRequest);
     }
 
-    @DeleteMapping("/{transactionId}")
-    public ResponseEntity<SuccessResponseDto> deleteTransaction(@PathVariable String transactionId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteTransaction(@RequestParam String transactionId) {
         return service.deleteTransaction(transactionId);
     }
 

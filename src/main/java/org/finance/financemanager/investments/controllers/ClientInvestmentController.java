@@ -54,13 +54,13 @@ public class ClientInvestmentController {
         return service.createInvestment(investmentRequest);
     }
 
-    @PatchMapping("/{investmentId}")
-    public InvestmentResponseDto updateInvestment(@PathVariable String investmentId , @RequestBody InvestmentRequestDto investmentRequest) {
+    @PatchMapping("/")
+    public InvestmentResponseDto updateInvestment(@RequestParam String investmentId , @RequestBody InvestmentRequestDto investmentRequest) {
         return service.updateInvestment(investmentId, investmentRequest);
     }
 
-    @DeleteMapping("/{investmentId}")
-    public ResponseEntity<SuccessResponseDto> deleteInvestment(@PathVariable String investmentId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteInvestment(@RequestParam String investmentId) {
         return service.deleteInvestment(investmentId);
     }
 
@@ -69,8 +69,8 @@ public class ClientInvestmentController {
         return service.getInvestmentDetails();
     }
 
-    @PatchMapping("/edit-values/{investmentId}")
-    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(@PathVariable String investmentId , @RequestBody InvestmentValueRequestDto investmentValueRequest) {
+    @PatchMapping("/edit-values/")
+    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(@RequestParam String investmentId , @RequestBody InvestmentValueRequestDto investmentValueRequest) {
         return service.editInvestmentValue(investmentId, investmentValueRequest);
     }
 }

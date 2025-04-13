@@ -57,13 +57,13 @@ public class ClientSavingController {
         return service.createSaving(savingRequest);
     }
 
-    @PatchMapping("/{savingId}")
-    public SavingResponseDto updateSaving(@PathVariable String savingId , @RequestBody SavingRequestDto savingRequest) {
+    @PatchMapping("/")
+    public SavingResponseDto updateSaving(@RequestParam String savingId , @RequestBody SavingRequestDto savingRequest) {
         return service.updateSaving(savingId, savingRequest);
     }
 
-    @DeleteMapping("/{savingId}")
-    public ResponseEntity<SuccessResponseDto> deleteSaving(@PathVariable String savingId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteSaving(@RequestParam String savingId) {
         return service.deleteSaving(savingId);
     }
 
@@ -72,9 +72,9 @@ public class ClientSavingController {
         return service.getSavingDetails();
     }
 
-    @PatchMapping("/edit-saved-amount/{savingId}")
+    @PatchMapping("/edit-saved-amount/")
     public ResponseEntity<SavingAmountResponseDto> editSavedAmount(
-            @PathVariable String savingId,
+            @RequestParam String savingId,
             @RequestParam BigDecimal savedAmount) {
         return service.editSavedAmount(savingId, savedAmount);
     }

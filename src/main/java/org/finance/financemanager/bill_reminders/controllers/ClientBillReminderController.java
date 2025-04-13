@@ -55,13 +55,13 @@ public class ClientBillReminderController {
         return service.createBillReminder(billReminderRequest);
     }
 
-    @PatchMapping("/{billReminderId}")
-    public BillReminderResponseDto updateBillReminder(@PathVariable String billReminderId , @RequestBody BillReminderRequestDto billReminderRequest) {
+    @PatchMapping("/")
+    public BillReminderResponseDto updateBillReminder(@RequestParam String billReminderId , @RequestBody BillReminderRequestDto billReminderRequest) {
         return service.updateBillReminder(billReminderId, billReminderRequest);
     }
 
-    @DeleteMapping("/{billReminderId}")
-    public ResponseEntity<SuccessResponseDto> deleteBillReminder(@PathVariable String billReminderId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteBillReminder(@RequestParam String billReminderId) {
         return service.deleteBillReminder(billReminderId);
     }
 
@@ -70,8 +70,8 @@ public class ClientBillReminderController {
         return service.getBillRemindersDetails();
     }
 
-    @PatchMapping("/paid-status/{billReminderId}")
-    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@PathVariable String billReminderId) {
+    @PatchMapping("/paid-status/")
+    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@RequestParam String billReminderId) {
         return service.editBillReminderPayment(billReminderId);
     }
 }

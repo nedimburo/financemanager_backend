@@ -11,8 +11,6 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 
 public interface BillReminderRepository extends JpaRepository<BillReminderEntity, String>, JpaSpecificationExecutor<BillReminderEntity> {
-    Page<BillReminderEntity> findAllByUserId(String userId, Pageable pageable);
-    Page<BillReminderEntity> findAllByUserIdAndBillNameContainingIgnoreCase(String userId, String billName, Pageable pageable);
     @Query("SELECT SUM(b.amount) FROM BillReminderEntity b WHERE b.isPaid = true AND b.user.id = :userId")
     BigDecimal findTotalPaidBillsByUserId(@Param("userId") String userId);
     @Query("SELECT SUM(b.amount) FROM BillReminderEntity b WHERE b.isPaid = false AND b.user.id = :userId")
