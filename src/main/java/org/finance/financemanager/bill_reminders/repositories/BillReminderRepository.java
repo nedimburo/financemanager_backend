@@ -9,12 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public interface BillReminderRepository extends JpaRepository<BillReminderEntity, String>, JpaSpecificationExecutor<BillReminderEntity> {
     @Query("SELECT SUM(b.amount) FROM BillReminderEntity b WHERE b.isPaid = true AND b.user.id = :userId")
     BigDecimal findTotalPaidBillsByUserId(@Param("userId") String userId);
     @Query("SELECT SUM(b.amount) FROM BillReminderEntity b WHERE b.isPaid = false AND b.user.id = :userId")
     BigDecimal findTotalUnpaidBillsByUserId(@Param("userId") String userId);
-    @Query("SELECT b FROM BillReminderEntity b WHERE b.isPaid = false AND b.user.id = :userId ORDER BY b.dueDate ASC")
-    BillReminderEntity findClosestUnpaidBillByUserId(@Param("userId") String userId);
+    Optional<BillReminderEntity> findFirstByUserIdAndIsPaidFalseOrderByDueDateAsc(String userId);
+
 }

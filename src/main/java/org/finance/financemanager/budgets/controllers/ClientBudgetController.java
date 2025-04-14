@@ -66,8 +66,4 @@ public class ClientBudgetController {
         return service.deleteBudget(budgetId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<BudgetDetailsResponseDto> getBudgetDetails() {
-        return service.getBudgetDetails();
-    }
 }

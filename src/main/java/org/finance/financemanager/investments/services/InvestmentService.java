@@ -151,29 +151,6 @@ public class InvestmentService {
     }
 
     @Transactional
-    public ResponseEntity<InvestmentDetailsResponseDto> getInvestmentDetails() {
-        try {
-            String uid = Auth.getUserId();
-            BigDecimal totalAmountInvested = repository.findInvestmentAmountInvestedTotalByUserId(uid);
-            BigDecimal totalCurrentValue = repository.findInvestmentCurrentValueTotalByUserId(uid);
-            InvestmentEntity highInvestedAmount = repository.findHighestInvestmentAmountInvestedByUserId(uid);
-            InvestmentEntity highCurrentValue = repository.findHighestInvestmentCurrentValueByUserId(uid);
-            InvestmentDetailsResponseDto response = new InvestmentDetailsResponseDto();
-            response.setTotalAmountInvested(totalAmountInvested);
-            response.setTotalCurrentValue(totalCurrentValue);
-            response.setInvestmentHighInvestedName(highInvestedAmount != null ? highInvestedAmount.getInvestmentName() : "N/A");
-            response.setInvestmentHighInvestedAmount(highInvestedAmount != null ? highInvestedAmount.getAmountInvested() : BigDecimal.ZERO);
-            response.setInvestmentHighInvestedValue(highInvestedAmount != null ? highInvestedAmount.getCurrentValue() : BigDecimal.ZERO);
-            response.setInvestmentHighCurrentName(highCurrentValue != null ? highCurrentValue.getInvestmentName() : "N/A");
-            response.setInvestmentHighCurrentAmount(highCurrentValue != null ? highCurrentValue.getAmountInvested() : BigDecimal.ZERO);
-            response.setInvestmentHighCurrentValue(highCurrentValue != null ? highCurrentValue.getCurrentValue() : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while getting investment details: " + e);
-        }
-    }
-
-    @Transactional
     public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
         try {
             InvestmentEntity updatedInvestment = getInvestment(investmentId);

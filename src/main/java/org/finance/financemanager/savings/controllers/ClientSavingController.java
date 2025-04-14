@@ -67,11 +67,6 @@ public class ClientSavingController {
         return service.deleteSaving(savingId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<SavingDetailsResponseDto> getSavingDetails() {
-        return service.getSavingDetails();
-    }
-
     @PatchMapping("/edit-saved-amount/")
     public ResponseEntity<SavingAmountResponseDto> editSavedAmount(
             @RequestParam String savingId,

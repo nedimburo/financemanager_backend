@@ -18,7 +18,6 @@ import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.mappers.TransactionMapper;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
-import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
@@ -157,29 +156,6 @@ public class TransactionService {
                             .build());
         } catch (Exception e){
             throw new RuntimeException("Error deleting transaction: " + transactionId, e);
-        }
-    }
-
-    @Transactional
-    public ResponseEntity<TransactionDetailsResponseDto> getTransactionDetails() {
-        try {
-            String uid = Auth.getUserId();
-            BigDecimal totalExpense = repository.findTotalExpenseByUserId(uid);
-            BigDecimal totalIncome = repository.findTotalIncomeByUserId(uid);
-            Long noOfExpense = repository.countExpensesByUserId(uid);
-            Long noOfIncome = repository.countIncomeByUserId(uid);
-            BigDecimal maxExpenseAmount = repository.findMaxExpenseByUserId(uid);
-            BigDecimal maxIncomeAmount = repository.findMaxIncomeByUserId(uid);
-            TransactionDetailsResponseDto response = new TransactionDetailsResponseDto();
-            response.setExpenseAmount(totalExpense != null ? totalExpense : BigDecimal.ZERO);
-            response.setIncomeAmount(totalIncome != null ? totalIncome : BigDecimal.ZERO);
-            response.setNoOfExpenses(noOfExpense != null ? noOfExpense : 0);
-            response.setNoOfIncomes(noOfIncome != null ? noOfIncome : 0);
-            response.setHighestExpenseAmount(maxExpenseAmount != null ? maxExpenseAmount : BigDecimal.ZERO);
-            response.setHighestIncomeAmount(maxIncomeAmount != null ? maxIncomeAmount : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting transaction details: " + e);
         }
     }
 

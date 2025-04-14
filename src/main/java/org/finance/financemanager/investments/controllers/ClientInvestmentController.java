@@ -64,11 +64,6 @@ public class ClientInvestmentController {
         return service.deleteInvestment(investmentId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<InvestmentDetailsResponseDto> getInvestmentDetails() {
-        return service.getInvestmentDetails();
-    }
-
     @PatchMapping("/edit-values/")
     public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(@RequestParam String investmentId , @RequestBody InvestmentValueRequestDto investmentValueRequest) {
         return service.editInvestmentValue(investmentId, investmentValueRequest);

@@ -65,11 +65,6 @@ public class ClientBillReminderController {
         return service.deleteBillReminder(billReminderId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<BillReminderDetailsResponseDto> getBillRemindersDetails() {
-        return service.getBillRemindersDetails();
-    }
-
     @PatchMapping("/paid-status/")
     public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@RequestParam String billReminderId) {
         return service.editBillReminderPayment(billReminderId);

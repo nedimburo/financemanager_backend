@@ -72,11 +72,6 @@ public class ClientTransactionController {
         return service.deleteTransaction(transactionId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<TransactionDetailsResponseDto> getTransactionDetails() {
-        return service.getTransactionDetails();
-    }
-
     @GetMapping("/filtered")
     public List<TransactionResponseDto> getFilteredTransactions(
             @RequestParam(required = false) Integer month,
