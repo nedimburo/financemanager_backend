@@ -12,17 +12,19 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "investments")
 @ToString(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvestmentEntity extends Auditable implements Investment {
+public class InvestmentEntity extends Auditable {
 
     @Id
-    @Column(name = "id", nullable = false)
-    private String id;
+    @GeneratedValue
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -46,12 +48,4 @@ public class InvestmentEntity extends Auditable implements Investment {
 
     @Column(name = "start_date")
     private LocalDateTime startDate;
-
-    @CreatedDate
-    @Column(name = "created", nullable = false, updatable = false)
-    private LocalDateTime created;
-
-    @LastModifiedDate
-    @Column(name = "updated", nullable = false)
-    private LocalDateTime updated;
 }

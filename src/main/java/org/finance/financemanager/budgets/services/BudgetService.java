@@ -8,21 +8,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.budgets.entities.BudgetEntity;
-import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
+import org.finance.financemanager.budgets.mappers.BudgetMapper;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.repositories.BudgetRepository;
+import org.finance.financemanager.budgets.specifications.BudgetSpecification;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
+import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,99 +36,91 @@ import java.util.UUID;
 public class BudgetService {
 
     private final BudgetRepository repository;
+    private final BudgetMapper budgetMapper;
     private final UserService userService;
 
     @Transactional
-    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable) {
+    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserId(uid, pageable)
-                    .map(budget -> new BudgetResponseDto(
-                            budget.getId(),
-                            budget.getUser().getId(),
-                            budget.getBudgetName(),
-                            budget.getCategory().toString(),
-                            budget.getBudgetLimit(),
-                            budget.getStartDate().toString(),
-                            budget.getEndDate().toString(),
-                            null,
-                            budget.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        try {
+            Specification<BudgetEntity> spec = BudgetSpecification.filterBudgets(query, category, userId);
+            return repository.findAll(spec, pageable).map(budgetMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users budgets: ", e);
         }
     }
 
     @Transactional
-    public Page<BudgetResponseDto> searchUsersBudgets(String budgetName, Pageable pageable){
+    public BudgetResponseDto getBudgetById(String budgetId) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            return repository.findAllByUserIdAndBudgetNameIsContainingIgnoreCase(uid, budgetName, pageable)
-                    .map(budget -> new BudgetResponseDto(
-                            budget.getId(),
-                            budget.getUser().getId(),
-                            budget.getBudgetName(),
-                            budget.getCategory().toString(),
-                            budget.getBudgetLimit(),
-                            budget.getStartDate().toString(),
-                            budget.getEndDate().toString(),
-                            null,
-                            budget.getCreated().toString()
-                    ));
+            userId = Auth.getUserId();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting users budgets: ", e);
+            throw new UnauthorizedException(e.getMessage());
         }
-    }
 
-    @Transactional
-    public ResponseEntity<BudgetResponseDto> getBudgetById(String budgetId) {
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        BudgetEntity budget = getBudget(budgetId);
+
         try {
-            BudgetEntity budget = getBudget(budgetId);
-            BudgetResponseDto response = formatBudgetResponse(budget);
-            return ResponseEntity.ok(response);
+            return budgetMapper.toDto(budget);
         } catch (Exception e){
             throw new RuntimeException("Error getting budget by id: " + budgetId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<BudgetResponseDto> createBudget(BudgetRequestDto budgetRequest) {
+    public BudgetResponseDto createBudget(BudgetRequestDto budgetRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+        UserEntity user = userService.getUser(userId);
 
-            BudgetEntity newBudget = new BudgetEntity();
-            newBudget.setId(UUID.randomUUID().toString());
-            newBudget.setBudgetName(budgetRequest.getBudgetName());
-            newBudget.setCategory(FinanceCategory.valueOf(budgetRequest.getCategory()));
-            newBudget.setBudgetLimit(budgetRequest.getBudgetLimit());
-            newBudget.setStartDate(budgetRequest.getStartDate());
-            newBudget.setEndDate(budgetRequest.getEndDate());
+        try {
+            BudgetEntity newBudget = budgetMapper.toEntity(budgetRequest);
             newBudget.setUser(user);
             BudgetEntity savedBudget = repository.save(newBudget);
 
-            BudgetResponseDto response = formatBudgetResponse(savedBudget);
+            BudgetResponseDto response = budgetMapper.toDto(savedBudget);
             response.setMessage("Budget has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating budget: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<BudgetResponseDto> updateBudget(String budgetId, BudgetRequestDto budgetRequest) {
+    public BudgetResponseDto updateBudget(String budgetId, BudgetRequestDto budgetRequest) {
         try {
             BudgetEntity updatedBudget = getBudget(budgetId);
             if (budgetRequest.getBudgetName() != null) { updatedBudget.setBudgetName(budgetRequest.getBudgetName()); }
-            if (budgetRequest.getCategory() != null) { updatedBudget.setCategory(FinanceCategory.valueOf(budgetRequest.getCategory())); }
+            if (budgetRequest.getCategory() != null) { updatedBudget.setCategory(budgetRequest.getCategory()); }
             if (budgetRequest.getBudgetLimit() != null) { updatedBudget.setBudgetLimit(budgetRequest.getBudgetLimit()); }
             if (budgetRequest.getStartDate() != null) { updatedBudget.setStartDate(budgetRequest.getStartDate()); }
             if (budgetRequest.getEndDate() != null) { updatedBudget.setEndDate(budgetRequest.getEndDate()); }
             repository.save(updatedBudget);
 
-            BudgetResponseDto response = formatBudgetResponse(updatedBudget);
+            BudgetResponseDto response = budgetMapper.toDto(updatedBudget);
             response.setMessage("Budget has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating budget: ", e);
         }
@@ -147,36 +142,6 @@ public class BudgetService {
         } catch (Exception e){
             throw new RuntimeException("Error deleting budget: " + budgetId, e);
         }
-    }
-
-    @Transactional
-    public ResponseEntity<BudgetDetailsResponseDto> getBudgetDetails() {
-        try {
-            String uid = Auth.getUserId();
-            BudgetEntity biggestBudget = repository.findBiggestBudgetByUserId(uid);
-            BudgetEntity lowestBudget = repository.findLowestBudgetByUserId(uid);
-            BudgetDetailsResponseDto response = new BudgetDetailsResponseDto();
-            response.setBiggestBudgetName(biggestBudget != null ? biggestBudget.getBudgetName() : "N/A");
-            response.setBiggestBudgetAmount(biggestBudget != null ? biggestBudget.getBudgetLimit() : BigDecimal.ZERO);
-            response.setLowestBudgetName(lowestBudget != null ? lowestBudget.getBudgetName() : "N/A");
-            response.setLowestBudgetAmount(lowestBudget != null ? lowestBudget.getBudgetLimit() : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while getting budget details");
-        }
-    }
-
-    private BudgetResponseDto formatBudgetResponse(BudgetEntity budget) {
-        BudgetResponseDto response = new BudgetResponseDto();
-        response.setBudgetId(budget.getId());
-        response.setUserId(budget.getUser().getId());
-        response.setBudgetName(budget.getBudgetName());
-        response.setCategory(budget.getCategory().toString());
-        response.setBudgetLimit(budget.getBudgetLimit() != null ? budget.getBudgetLimit() : BigDecimal.ZERO);
-        response.setStartDate(budget.getStartDate().toString());
-        response.setEndDate(budget.getEndDate().toString());
-        response.setCreatedDate(budget.getCreated().toString());
-        return response;
     }
 
     public BudgetEntity getBudget(String budgetId) {

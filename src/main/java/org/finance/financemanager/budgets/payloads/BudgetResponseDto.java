@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.finance.financemanager.common.enums.FinanceCategory;
 
 import java.math.BigDecimal;
 
@@ -15,7 +16,7 @@ public class BudgetResponseDto {
     private String budgetId;
     private String userId;
     private String budgetName;
-    private String category;
+    private FinanceCategory category;
     private BigDecimal budgetLimit;
     private String startDate;
     private String endDate;

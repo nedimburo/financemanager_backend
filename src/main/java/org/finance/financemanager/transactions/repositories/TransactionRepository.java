@@ -13,7 +13,6 @@ import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String>, JpaSpecificationExecutor<TransactionEntity> {
     Page<TransactionEntity> findAllByUserId(String userId, Pageable pageable);
-    Page<TransactionEntity> findAllByUserIdAndDescriptionContainingIgnoreCase(String userId, String description, Pageable pageable);
     @Query("SELECT SUM(t.amount) FROM TransactionEntity t WHERE t.type = 'EXPENSE' AND t.user.id = :userId")
     BigDecimal findTotalExpenseByUserId(@Param("userId") String userId);
     @Query("SELECT SUM(t.amount) FROM TransactionEntity t WHERE t.type = 'INCOME' AND t.user.id = :userId")

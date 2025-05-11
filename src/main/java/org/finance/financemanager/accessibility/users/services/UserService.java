@@ -15,14 +15,17 @@ import org.finance.financemanager.accessibility.auth.services.FirebaseAuthServic
 import org.finance.financemanager.accessibility.roles.entities.RoleEntity;
 import org.finance.financemanager.accessibility.roles.entities.RoleName;
 import org.finance.financemanager.accessibility.roles.services.RoleService;
+import org.finance.financemanager.accessibility.users.mappers.UserMapper;
 import org.finance.financemanager.accessibility.users.payloads.*;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.accessibility.users.repositories.UserRepository;
+import org.finance.financemanager.accessibility.users.specifications.UserSpecification;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.*;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import static org.finance.financemanager.accessibility.roles.entities.RoleName.CLIENT;
 
@@ -40,6 +44,7 @@ import static org.finance.financemanager.accessibility.roles.entities.RoleName.C
 public class UserService {
 
     private final UserRepository repository;
+    private final UserMapper userMapper;
     private final RoleService roleService;
     private final FirebaseAuthService firebaseAuthService;
 
@@ -111,7 +116,7 @@ public class UserService {
             responseDto.setFirstName(user.getFirstName());
             responseDto.setLastName(user.getLastName());
             responseDto.setRole(user.getRole().getName());
-            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
+            responseDto.setRegistrationDate(user.getCreated().toString());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(responseDto);
         } catch (Exception e) {
@@ -120,7 +125,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<UserResponseDto> getUserById(String userId) {
+    public UserResponseDto getUserById(String userId) {
         UserEntity user;
         try {
             user = getUser(userId);
@@ -129,47 +134,20 @@ public class UserService {
         }
 
         try {
-            UserResponseDto responseDto = new UserResponseDto();
-            responseDto.setUserId(user.getId());
-            responseDto.setEmail(user.getEmail());
-            responseDto.setFirstName(user.getFirstName());
-            responseDto.setLastName(user.getLastName());
-            responseDto.setRole(user.getRole().getName());
-            responseDto.setNumberOfTransactions(user.getTransactions().size());
-            responseDto.setRegistrationDate(formatedCreatedDate(user.getCreated()));
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(responseDto);
+            return userMapper.toDto(user);
         } catch (Exception e) {
             throw new RuntimeException("Error while getting user: ", e);
         }
     }
 
     @Transactional
-    public Page<UserResponseDto> getUsers(Pageable pageable){
-        return repository.findAll(pageable)
-                .map(user -> new UserResponseDto(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getRole().getName(),
-                        user.getTransactions().size(),
-                        user.getCreated().toString()
-                ));
-    }
-
-    @Transactional
-    public Page<UserResponseDto> searchUsersByEmail(String email, Pageable pageable) {
-        return repository.findByEmailContainingIgnoreCase(email, pageable)
-                .map(user -> new UserResponseDto(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getRole().getName(),
-                        user.getTransactions().size(),
-                        user.getCreated().toString()
-                ));
+    public Page<UserResponseDto> getUsers(Pageable pageable, String query){
+        try {
+            Specification<UserEntity> spec = UserSpecification.filterUsers(query);
+            return repository.findAll(spec, pageable).map(userMapper::toDto);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting users: ", e);
+        }
     }
 
     @Transactional
@@ -264,11 +242,6 @@ public class UserService {
         } catch (Exception e) {
             throw new RuntimeException("User not found by the provided uid", e);
         }
-    }
-
-    private String formatedCreatedDate(LocalDateTime date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd.yyyy.");
-        return date.format(formatter);
     }
 
     public UserEntity getUser(String userId) {

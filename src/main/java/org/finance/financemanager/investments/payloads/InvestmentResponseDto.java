@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.finance.financemanager.investments.entities.InvestmentType;
 
 import java.math.BigDecimal;
 
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 public class InvestmentResponseDto {
     private String investmentId;
     private String userId;
-    private String type;
+    private InvestmentType type;
     private String investmentName;
     private BigDecimal amountInvested;
     private BigDecimal currentValue;

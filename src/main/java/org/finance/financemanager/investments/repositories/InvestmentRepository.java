@@ -4,14 +4,13 @@ import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 
-public interface InvestmentRepository extends JpaRepository<InvestmentEntity, String> {
-    Page<InvestmentEntity> findAllByUserId(String userId, Pageable pageable);
-    Page<InvestmentEntity> findAllByUserIdAndInvestmentNameContainingIgnoreCase(String userId, String investmentName, Pageable pageable);
+public interface InvestmentRepository extends JpaRepository<InvestmentEntity, String>, JpaSpecificationExecutor<InvestmentEntity> {
     @Query("SELECT SUM(i.amountInvested) FROM InvestmentEntity i WHERE i.user.id = :userId")
     BigDecimal findInvestmentAmountInvestedTotalByUserId(@Param("userId") String userId);
     @Query("SELECT SUM(i.currentValue) FROM InvestmentEntity i WHERE i.user.id = :userId")

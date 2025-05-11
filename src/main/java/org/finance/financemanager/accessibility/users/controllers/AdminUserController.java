@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.accessibility.users.entities.UserOrderBy;
 import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,27 +30,22 @@ public class AdminUserController {
     private final UserService service;
 
     @GetMapping("/specific")
-    public ResponseEntity<UserResponseDto> getUserById(@RequestParam String userId) {
+    public UserResponseDto getUserById(@RequestParam String userId) {
         return service.getUserById(userId);
     }
 
     @GetMapping("/")
     public Page<UserResponseDto> getUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) UserOrderBy orderBy,
+            @RequestParam(required = false) Boolean orderDirection
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return service.getUsers(pageable);
-    }
+        Sort.Direction direction = (orderDirection != null && orderDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, (orderBy != null) ? orderBy.getColumn() : "id"));
 
-    @GetMapping("/search")
-    public Page<UserResponseDto> searchUser(
-            @RequestParam String email,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return service.searchUsersByEmail(email, pageable);
+        return service.getUsers(pageable, query);
     }
 
     @GetMapping("/firebase-user")
@@ -67,8 +64,8 @@ public class AdminUserController {
         return service.updateFirebaseUser(uid, newFirstName, newLastName, newEmail, newPassword);
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<SuccessResponseDto> deleteUser(@PathVariable String userId){
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteUser(@RequestParam String userId){
         return service.deleteUser(userId);
     }
 }

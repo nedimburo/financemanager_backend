@@ -5,14 +5,17 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.budgets.entities.BudgetOrderBy;
 import org.finance.financemanager.budgets.payloads.BudgetDetailsResponseDto;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
 import org.finance.financemanager.budgets.services.BudgetService;
+import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,44 +34,36 @@ public class ClientBudgetController {
     @GetMapping("/")
     public Page<BudgetResponseDto> getUsersBudgets(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) BudgetOrderBy orderBy,
+            @RequestParam(required = false) Boolean orderDirection,
+            @RequestParam(required = false) FinanceCategory category
     ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.getUsersBudgets(pageable);
+        Sort.Direction direction = (orderDirection != null && orderDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, (orderBy != null) ? orderBy.getColumn() : "id"));
+
+        return service.getUsersBudgets(pageable, query, category);
     }
 
-    @GetMapping("/search")
-    public Page<BudgetResponseDto> searchUsersBudget(
-            @RequestParam String budgetName,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ){
-        Pageable pageable = PageRequest.of(page, size);
-        return service.searchUsersBudgets(budgetName, pageable);
-    }
-
-    @GetMapping("/{budgetId}")
-    public ResponseEntity<BudgetResponseDto> getBudgetById(@PathVariable String budgetId) {
+    @GetMapping("/specific")
+    public BudgetResponseDto getBudgetById(@RequestParam String budgetId) {
         return service.getBudgetById(budgetId);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<BudgetResponseDto> createBudget(@RequestBody BudgetRequestDto budgetRequest) {
+    @PostMapping("/")
+    public BudgetResponseDto createBudget(@RequestBody BudgetRequestDto budgetRequest) {
         return service.createBudget(budgetRequest);
     }
 
-    @PatchMapping("/{budgetId}")
-    public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
+    @PatchMapping("/")
+    public BudgetResponseDto updateBudget(@RequestParam String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
         return service.updateBudget(budgetId, budgetRequest);
     }
 
-    @DeleteMapping("/{budgetId}")
-    public ResponseEntity<SuccessResponseDto> deleteBudget(@PathVariable String budgetId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteBudget(@RequestParam String budgetId) {
         return service.deleteBudget(budgetId);
     }
 
-    @GetMapping("/details")
-    public ResponseEntity<BudgetDetailsResponseDto> getBudgetDetails() {
-        return service.getBudgetDetails();
-    }
 }

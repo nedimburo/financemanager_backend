@@ -18,7 +18,6 @@ import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.mappers.TransactionMapper;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
-import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
@@ -76,54 +75,66 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> getTransactionById(String transactionId) {
+    public TransactionResponseDto getTransactionById(String transactionId) {
+        String userId;
         try {
-            TransactionEntity transaction = getTransaction(transactionId);
-            TransactionResponseDto response = formatTransactionResponse(transaction);
-            return ResponseEntity.ok(response);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        Boolean userExists = userService.doesUserExist(userId);
+        if (!userExists) {
+            throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
+        }
+
+        TransactionEntity transaction = getTransaction(transactionId);
+
+        try {
+            return transactionMapper.toDto(transaction);
         } catch (Exception e){
             throw new RuntimeException("Error getting transaction by id: " + transactionId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> createTransaction(TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto createTransaction(TransactionRequestDto transactionRequest) {
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = userService.getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
 
-            TransactionEntity newTransaction = new TransactionEntity();
-            newTransaction.setId(UUID.randomUUID().toString());
-            newTransaction.setType(TransactionType.valueOf(transactionRequest.getType()));
-            newTransaction.setCategory(FinanceCategory.valueOf(transactionRequest.getCategory()));
-            newTransaction.setAmount(transactionRequest.getAmount());
-            newTransaction.setDescription(transactionRequest.getDescription());
-            newTransaction.setDate(transactionRequest.getDate());
+        UserEntity user = userService.getUser(userId);
+
+        try {
+            TransactionEntity newTransaction = transactionMapper.toEntity(transactionRequest);
             newTransaction.setUser(user);
             TransactionEntity savedTransaction = repository.save(newTransaction);
 
-            TransactionResponseDto response = formatTransactionResponse(savedTransaction);
+            TransactionResponseDto response = transactionMapper.toDto(savedTransaction);
             response.setMessage("Transaction has been successfully created");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error creating transaction: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<TransactionResponseDto> updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
         try {
             TransactionEntity updatedTransaction = getTransaction(transactionId);
-            if (transactionRequest.getType() != null) { updatedTransaction.setType(TransactionType.valueOf(transactionRequest.getType())); }
-            if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(FinanceCategory.valueOf(transactionRequest.getCategory())); }
+            if (transactionRequest.getType() != null) { updatedTransaction.setType(transactionRequest.getType()); }
+            if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(transactionRequest.getCategory()); }
             if (transactionRequest.getAmount() != null) { updatedTransaction.setAmount(transactionRequest.getAmount()); }
             if (transactionRequest.getDescription() != null) { updatedTransaction.setDescription(transactionRequest.getDescription()); }
             if (transactionRequest.getDate() != null) { updatedTransaction.setDate(transactionRequest.getDate()); }
             repository.save(updatedTransaction);
 
-            TransactionResponseDto response = formatTransactionResponse(updatedTransaction);
+            TransactionResponseDto response = transactionMapper.toDto(updatedTransaction);
             response.setMessage("Transaction has been successfully updated");
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating transaction: ", e);
         }
@@ -148,29 +159,6 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<TransactionDetailsResponseDto> getTransactionDetails() {
-        try {
-            String uid = Auth.getUserId();
-            BigDecimal totalExpense = repository.findTotalExpenseByUserId(uid);
-            BigDecimal totalIncome = repository.findTotalIncomeByUserId(uid);
-            Long noOfExpense = repository.countExpensesByUserId(uid);
-            Long noOfIncome = repository.countIncomeByUserId(uid);
-            BigDecimal maxExpenseAmount = repository.findMaxExpenseByUserId(uid);
-            BigDecimal maxIncomeAmount = repository.findMaxIncomeByUserId(uid);
-            TransactionDetailsResponseDto response = new TransactionDetailsResponseDto();
-            response.setExpenseAmount(totalExpense != null ? totalExpense : BigDecimal.ZERO);
-            response.setIncomeAmount(totalIncome != null ? totalIncome : BigDecimal.ZERO);
-            response.setNoOfExpenses(noOfExpense != null ? noOfExpense : 0);
-            response.setNoOfIncomes(noOfIncome != null ? noOfIncome : 0);
-            response.setHighestExpenseAmount(maxExpenseAmount != null ? maxExpenseAmount : BigDecimal.ZERO);
-            response.setHighestIncomeAmount(maxIncomeAmount != null ? maxIncomeAmount : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            throw new RuntimeException("Error getting transaction details: " + e);
-        }
-    }
-
-    @Transactional
     public List<TransactionResponseDto> getFilteredTransactions(Integer month, Integer year) {
         try {
             String uid = Auth.getUserId();
@@ -185,7 +173,7 @@ public class TransactionService {
                 filteredTransactions = repository.findAll();
             }
             return filteredTransactions.stream()
-                    .map(this::formatTransactionResponse)
+                    .map(transactionMapper::toDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
@@ -206,7 +194,7 @@ public class TransactionService {
             } else {
                 filteredTransactions = repository.findAllByUserId(uid, pageable);
             }
-            return filteredTransactions.map(this::formatTransactionResponse);
+            return filteredTransactions.map(transactionMapper::toDto);
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
         }
@@ -247,19 +235,6 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("Error getting expense and income for each month: " + year, e);
         }
-    }
-
-    private TransactionResponseDto formatTransactionResponse(TransactionEntity transaction) {
-        TransactionResponseDto response = new TransactionResponseDto();
-        response.setTransactionId(transaction.getId());
-        response.setUserId(transaction.getUser().getId());
-        response.setType(transaction.getType().toString());
-        response.setCategory(transaction.getCategory().toString());
-        response.setAmount(transaction.getAmount() != null ? transaction.getAmount() : BigDecimal.ZERO);
-        response.setDescription(transaction.getDescription());
-        response.setDate(transaction.getDate().toString());
-        response.setCreatedDate(transaction.getCreated().toString());
-        return response;
     }
 
     public void createTransactionFromBillReminder(BillReminderEntity billReminder) {

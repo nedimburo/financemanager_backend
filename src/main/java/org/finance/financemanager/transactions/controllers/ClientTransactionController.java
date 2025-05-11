@@ -52,29 +52,24 @@ public class ClientTransactionController {
         return service.getUsersTransactions(pageable, query, type, category);
     }
 
-    @GetMapping("/{transactionId}")
-    public ResponseEntity<TransactionResponseDto> getTransactionById(@PathVariable String transactionId) {
+    @GetMapping("/specific")
+    public TransactionResponseDto getTransactionById(@RequestParam String transactionId) {
         return service.getTransactionById(transactionId);
     }
 
     @PostMapping("/")
-    public ResponseEntity<TransactionResponseDto> createTransaction(@RequestBody TransactionRequestDto transactionRequest) {
+    public TransactionResponseDto createTransaction(@RequestBody TransactionRequestDto transactionRequest) {
         return service.createTransaction(transactionRequest);
     }
 
-    @PatchMapping("/{transactionId}")
-    public ResponseEntity<TransactionResponseDto> updateTransaction(@PathVariable String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
+    @PatchMapping("/")
+    public TransactionResponseDto updateTransaction(@RequestParam String transactionId , @RequestBody TransactionRequestDto transactionRequest) {
         return service.updateTransaction(transactionId, transactionRequest);
     }
 
-    @DeleteMapping("/{transactionId}")
-    public ResponseEntity<SuccessResponseDto> deleteTransaction(@PathVariable String transactionId) {
+    @DeleteMapping("/")
+    public ResponseEntity<SuccessResponseDto> deleteTransaction(@RequestParam String transactionId) {
         return service.deleteTransaction(transactionId);
-    }
-
-    @GetMapping("/details")
-    public ResponseEntity<TransactionDetailsResponseDto> getTransactionDetails() {
-        return service.getTransactionDetails();
     }
 
     @GetMapping("/filtered")
