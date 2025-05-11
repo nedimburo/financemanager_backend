@@ -110,7 +110,6 @@ public class TransactionService {
 
         try {
             TransactionEntity newTransaction = transactionMapper.toEntity(transactionRequest);
-            newTransaction.setId(UUID.randomUUID().toString());
             newTransaction.setUser(user);
             TransactionEntity savedTransaction = repository.save(newTransaction);
 

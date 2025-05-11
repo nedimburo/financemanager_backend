@@ -27,9 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Slf4j
 @Getter
@@ -100,7 +98,6 @@ public class BillReminderService {
 
         try {
             BillReminderEntity newBillReminder = billReminderMapper.toEntity(billReminderRequest);
-            newBillReminder.setId(UUID.randomUUID().toString());
             newBillReminder.setIsPaid(false);
             newBillReminder.setUser(user);
             BillReminderEntity savedBillReminder = repository.save(newBillReminder);

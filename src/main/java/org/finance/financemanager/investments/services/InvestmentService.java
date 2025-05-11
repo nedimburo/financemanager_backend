@@ -98,7 +98,6 @@ public class InvestmentService {
 
         try {
             InvestmentEntity newInvestment = investmentMapper.toEntity(investmentRequest);
-            newInvestment.setId(UUID.randomUUID().toString());
             newInvestment.setUser(user);
             InvestmentEntity savedInvestment = repository.save(newInvestment);
 

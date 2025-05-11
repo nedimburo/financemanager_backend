@@ -98,7 +98,6 @@ public class SavingService {
 
         try {
             SavingEntity newSaving = savingMapper.toEntity(savingRequest);
-            newSaving.setId(UUID.randomUUID().toString());
             newSaving.setUser(user);
             SavingEntity savedSaving = repository.save(newSaving);
 

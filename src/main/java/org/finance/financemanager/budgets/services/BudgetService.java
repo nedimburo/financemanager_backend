@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -97,7 +96,6 @@ public class BudgetService {
 
         try {
             BudgetEntity newBudget = budgetMapper.toEntity(budgetRequest);
-            newBudget.setId(UUID.randomUUID().toString());
             newBudget.setUser(user);
             BudgetEntity savedBudget = repository.save(newBudget);
 
