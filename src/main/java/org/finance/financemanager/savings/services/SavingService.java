@@ -18,6 +18,7 @@ import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
 import org.finance.financemanager.savings.specifications.SavingSpecification;
+import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -76,7 +77,20 @@ public class SavingService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        SavingEntity saving = getSaving(savingId);
+        UUID savingUuid;
+        try {
+            savingUuid = UUID.fromString(savingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting saving id to UUID.");
+        }
+
+
+        SavingEntity saving;
+        try {
+            saving = getSaving(savingUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Saving with id: " + savingId + " doesn't exist");
+        }
 
         try {
             return savingMapper.toDto(saving);
@@ -111,8 +125,22 @@ public class SavingService {
 
     @Transactional
     public SavingResponseDto updateSaving(String savingId, SavingRequestDto savingRequest) {
+        UUID savingUuid;
         try {
-            SavingEntity updatedSaving = getSaving(savingId);
+            savingUuid = UUID.fromString(savingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting saving id to UUID.");
+        }
+
+
+        SavingEntity updatedSaving;
+        try {
+            updatedSaving = getSaving(savingUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Saving with id: " + savingId + " doesn't exist");
+        }
+
+        try {
             if (savingRequest.getGoalName() != null) { updatedSaving.setGoalName(savingRequest.getGoalName()); }
             if (savingRequest.getTargetAmount() != null) { updatedSaving.setTargetAmount(savingRequest.getTargetAmount()); }
             if (savingRequest.getCurrentAmount() != null) { updatedSaving.setCurrentAmount(savingRequest.getCurrentAmount()); }
@@ -130,8 +158,22 @@ public class SavingService {
 
     @Transactional
     public ResponseEntity<SuccessResponseDto> deleteSaving(String savingId) {
+        UUID savingUuid;
         try {
-            SavingEntity saving = getSaving(savingId);
+            savingUuid = UUID.fromString(savingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting saving id to UUID.");
+        }
+
+
+        SavingEntity saving;
+        try {
+            saving = getSaving(savingUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Saving with id: " + savingId + " doesn't exist");
+        }
+
+        try {
             repository.delete(saving);
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -148,8 +190,22 @@ public class SavingService {
 
     @Transactional
     public ResponseEntity<SavingAmountResponseDto> editSavedAmount(String savingId, BigDecimal savedAmount) {
+        UUID savingUuid;
         try {
-            SavingEntity updatedSaving = getSaving(savingId);
+            savingUuid = UUID.fromString(savingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting saving id to UUID.");
+        }
+
+
+        SavingEntity updatedSaving;
+        try {
+            updatedSaving = getSaving(savingUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Saving with id: " + savingId + " doesn't exist");
+        }
+
+        try {
             if (savedAmount != null) { updatedSaving.setCurrentAmount(savedAmount); }
             SavingAmountResponseDto response = new SavingAmountResponseDto();
             response.setCurrentAmount(updatedSaving.getCurrentAmount());
@@ -162,7 +218,7 @@ public class SavingService {
         }
     }
 
-    public SavingEntity getSaving(String savingId) {
+    public SavingEntity getSaving(UUID savingId) {
         return repository.findById(savingId)
                 .orElseThrow(() -> new EntityNotFoundException("Saving not found with id: " + savingId));
     }

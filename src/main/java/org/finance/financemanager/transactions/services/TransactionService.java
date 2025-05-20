@@ -88,7 +88,20 @@ public class TransactionService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        TransactionEntity transaction = getTransaction(transactionId);
+        UUID transactionUuid;
+        try {
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity transaction;
+        try {
+            transaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
 
         try {
             return transactionMapper.toDto(transaction);
@@ -123,8 +136,22 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponseDto updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
+        UUID transactionUuid;
         try {
-            TransactionEntity updatedTransaction = getTransaction(transactionId);
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity updatedTransaction;
+        try {
+            updatedTransaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
+
+        try {
             if (transactionRequest.getType() != null) { updatedTransaction.setType(transactionRequest.getType()); }
             if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(transactionRequest.getCategory()); }
             if (transactionRequest.getAmount() != null) { updatedTransaction.setAmount(transactionRequest.getAmount()); }
@@ -142,8 +169,22 @@ public class TransactionService {
 
     @Transactional
     public ResponseEntity<SuccessResponseDto> deleteTransaction(String transactionId) {
+        UUID transactionUuid;
         try {
-            TransactionEntity transaction = getTransaction(transactionId);
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity transaction;
+        try {
+            transaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
+
+        try {
             repository.delete(transaction);
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -269,7 +310,7 @@ public class TransactionService {
         }
     }
 
-    public TransactionEntity getTransaction(String transactionId) {
+    public TransactionEntity getTransaction(UUID transactionId) {
         return repository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found with id: " + transactionId));
     }

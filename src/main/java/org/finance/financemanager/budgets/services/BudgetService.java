@@ -18,6 +18,7 @@ import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
+import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -75,7 +76,20 @@ public class BudgetService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        BudgetEntity budget = getBudget(budgetId);
+        UUID budgetUuid;
+        try {
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity budget;
+        try {
+            budget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
 
         try {
             return budgetMapper.toDto(budget);
@@ -109,8 +123,22 @@ public class BudgetService {
 
     @Transactional
     public BudgetResponseDto updateBudget(String budgetId, BudgetRequestDto budgetRequest) {
+        UUID budgetUuid;
         try {
-            BudgetEntity updatedBudget = getBudget(budgetId);
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity updatedBudget;
+        try {
+            updatedBudget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
+
+        try {
             if (budgetRequest.getBudgetName() != null) { updatedBudget.setBudgetName(budgetRequest.getBudgetName()); }
             if (budgetRequest.getCategory() != null) { updatedBudget.setCategory(budgetRequest.getCategory()); }
             if (budgetRequest.getBudgetLimit() != null) { updatedBudget.setBudgetLimit(budgetRequest.getBudgetLimit()); }
@@ -128,8 +156,22 @@ public class BudgetService {
 
     @Transactional
     public ResponseEntity<SuccessResponseDto> deleteBudget(String budgetId) {
+        UUID budgetUuid;
         try {
-            BudgetEntity budget = getBudget(budgetId);
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity budget;
+        try {
+            budget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
+
+        try {
             repository.delete(budget);
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -144,7 +186,7 @@ public class BudgetService {
         }
     }
 
-    public BudgetEntity getBudget(String budgetId) {
+    public BudgetEntity getBudget(UUID budgetId) {
         return repository.findById(budgetId)
                 .orElseThrow(() -> new EntityNotFoundException("Budget not found with id: " + budgetId));
     }

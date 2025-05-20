@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Slf4j
 @Getter
@@ -76,12 +77,25 @@ public class BillReminderService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        BillReminderEntity billReminder = getBillReminder(billReminderId);
+        UUID billReminderUuid;
+        try {
+            billReminderUuid = UUID.fromString(billReminderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting bill reminder id to UUID.");
+        }
+
+
+        BillReminderEntity billReminder;
+        try {
+            billReminder = getBillReminder(billReminderUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Bill reminder with id: " + billReminderId + " doesn't exist");
+        }
 
         try {
             return billReminderMapper.toDto(billReminder);
         } catch (Exception e){
-            throw new RuntimeException("Error getting bill reminder by id: " + billReminderId, e);
+            throw new RuntimeException("Error getting bill reminder by id: " + billReminderId + " " + e.getMessage());
         }
     }
 
@@ -114,8 +128,22 @@ public class BillReminderService {
 
     @Transactional
     public BillReminderResponseDto updateBillReminder(String billReminderId, BillReminderRequestDto billReminderRequest) {
+        UUID billReminderUuid;
         try {
-            BillReminderEntity updatedBillReminder = getBillReminder(billReminderId);
+            billReminderUuid = UUID.fromString(billReminderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting bill reminder id to UUID.");
+        }
+
+
+        BillReminderEntity updatedBillReminder;
+        try {
+            updatedBillReminder = getBillReminder(billReminderUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Bill reminder with id: " + billReminderId + " doesn't exist");
+        }
+
+        try {
             if (billReminderRequest.getBillName() != null) { updatedBillReminder.setBillName(billReminderRequest.getBillName()); }
             if (billReminderRequest.getAmount() != null) { updatedBillReminder.setAmount(billReminderRequest.getAmount()); }
             if (billReminderRequest.getReceivedDate() != null) { updatedBillReminder.setReceivedDate(billReminderRequest.getReceivedDate()); }
@@ -132,8 +160,22 @@ public class BillReminderService {
 
     @Transactional
     public ResponseEntity<SuccessResponseDto> deleteBillReminder(String billReminderId) {
+        UUID billReminderUuid;
         try {
-            BillReminderEntity billReminder = getBillReminder(billReminderId);
+            billReminderUuid = UUID.fromString(billReminderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting bill reminder id to UUID.");
+        }
+
+
+        BillReminderEntity billReminder;
+        try {
+            billReminder = getBillReminder(billReminderUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Bill reminder with id: " + billReminderId + " doesn't exist");
+        }
+
+        try {
             repository.delete(billReminder);
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -150,8 +192,22 @@ public class BillReminderService {
 
     @Transactional
     public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(String billReminderId) {
+        UUID billReminderUuid;
         try {
-            BillReminderEntity updatedBill = getBillReminder(billReminderId);
+            billReminderUuid = UUID.fromString(billReminderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting bill reminder id to UUID.");
+        }
+
+
+        BillReminderEntity updatedBill;
+        try {
+            updatedBill = getBillReminder(billReminderUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Bill reminder with id: " + billReminderId + " doesn't exist");
+        }
+
+        try {
             updatedBill.setIsPaid(!updatedBill.getIsPaid());
             BillReminderPayResponse response = new BillReminderPayResponse();
             response.setPaymentStatus(updatedBill.getIsPaid());
@@ -164,7 +220,7 @@ public class BillReminderService {
         }
     }
 
-    public BillReminderEntity getBillReminder(String billReminderId) {
+    public BillReminderEntity getBillReminder(UUID billReminderId) {
         return repository.findById(billReminderId)
                 .orElseThrow(() -> new EntityNotFoundException("Bill reminder not found with id: " + billReminderId));
     }

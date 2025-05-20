@@ -9,8 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-public interface InvestmentRepository extends JpaRepository<InvestmentEntity, String>, JpaSpecificationExecutor<InvestmentEntity> {
+public interface InvestmentRepository extends JpaRepository<InvestmentEntity, UUID>, JpaSpecificationExecutor<InvestmentEntity> {
     @Query("SELECT SUM(i.amountInvested) FROM InvestmentEntity i WHERE i.user.id = :userId")
     BigDecimal findInvestmentAmountInvestedTotalByUserId(@Param("userId") String userId);
     @Query("SELECT SUM(i.currentValue) FROM InvestmentEntity i WHERE i.user.id = :userId")
