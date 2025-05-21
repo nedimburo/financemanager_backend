@@ -10,6 +10,8 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.investments.entities.InvestmentType;
@@ -17,7 +19,6 @@ import org.finance.financemanager.investments.mappers.InvestmentMapper;
 import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.repositories.InvestmentRepository;
 import org.finance.financemanager.investments.specifications.InvestmentSpecification;
-import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -43,7 +43,7 @@ public class InvestmentService {
     private final TransactionService transactionService;
 
     @Transactional
-    public Page<InvestmentResponseDto> getUsersInvestments(Pageable pageable, String query, InvestmentType type) {
+    public ListResponseDto<InvestmentResponseDto> getUsersInvestments(Pageable pageable, String query, InvestmentType type) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -58,7 +58,15 @@ public class InvestmentService {
 
         try {
             Specification<InvestmentEntity> spec = InvestmentSpecification.filterInvestments(query, type, userId);
-            return repository.findAll(spec, pageable).map(investmentMapper::toDto);
+            Page<InvestmentResponseDto> investmentPage = repository.findAll(spec, pageable).map(investmentMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) investmentPage.getTotalElements(),
+                    investmentPage.getNumber(),
+                    investmentPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(investmentPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users investments: ", e);
         }

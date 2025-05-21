@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentOrderBy;
 import org.finance.financemanager.investments.entities.InvestmentType;
 import org.finance.financemanager.investments.payloads.*;
 import org.finance.financemanager.investments.services.InvestmentService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,7 +30,7 @@ public class ClientInvestmentController {
     private final InvestmentService service;
 
     @GetMapping("/")
-    public Page<InvestmentResponseDto> getUsersInvestments(
+    public ListResponseDto<InvestmentResponseDto> getUsersInvestments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,

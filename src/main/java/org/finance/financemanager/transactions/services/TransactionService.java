@@ -12,6 +12,8 @@ import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
@@ -53,7 +55,7 @@ public class TransactionService {
     private final UserService userService;
 
     @Transactional
-    public Page<TransactionResponseDto> getUsersTransactions(Pageable pageable, String query, TransactionType type, FinanceCategory category) {
+    public ListResponseDto<TransactionResponseDto> getUsersTransactions(Pageable pageable, String query, TransactionType type, FinanceCategory category) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -68,7 +70,15 @@ public class TransactionService {
 
         try {
             Specification<TransactionEntity> spec = TransactionSpecification.filterTransactions(query, type, category, userId);
-            return repository.findAll(spec, pageable).map(transactionMapper::toDto);
+            Page<TransactionResponseDto> transactionPage = repository.findAll(spec, pageable).map(transactionMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) transactionPage.getTotalElements(),
+                    transactionPage.getNumber(),
+                    transactionPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(transactionPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users transactions: ", e);
         }

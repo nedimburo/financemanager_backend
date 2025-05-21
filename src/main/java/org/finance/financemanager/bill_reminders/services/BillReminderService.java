@@ -17,6 +17,8 @@ import org.finance.financemanager.bill_reminders.specifications.BillReminderSpec
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.Page;
@@ -42,7 +44,7 @@ public class BillReminderService {
     private final TransactionService transactionService;
 
     @Transactional
-    public Page<BillReminderResponseDto> getUsersBillReminders(Pageable pageable, String query) {
+    public ListResponseDto<BillReminderResponseDto> getUsersBillReminders(Pageable pageable, String query) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -57,7 +59,15 @@ public class BillReminderService {
 
         try {
             Specification<BillReminderEntity> spec = BillReminderSpecification.filterBillReminders(query, userId);
-            return repository.findAll(spec, pageable).map(billReminderMapper::toDto);
+            Page<BillReminderResponseDto> billRemindersPage = repository.findAll(spec, pageable).map(billReminderMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) billRemindersPage.getTotalElements(),
+                    billRemindersPage.getNumber(),
+                    billRemindersPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(billRemindersPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users bill reminders: ", e);
         }

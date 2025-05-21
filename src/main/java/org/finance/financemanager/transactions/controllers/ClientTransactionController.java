@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.entities.TransactionOrderBy;
 import org.finance.financemanager.transactions.entities.TransactionType;
@@ -37,7 +38,7 @@ public class ClientTransactionController {
     private final TransactionService service;
 
     @GetMapping("/")
-    public Page<TransactionResponseDto> getUsersTransactions(
+    public ListResponseDto<TransactionResponseDto> getUsersTransactions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,

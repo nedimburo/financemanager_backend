@@ -17,8 +17,9 @@ import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
-import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -41,7 +42,7 @@ public class BudgetService {
     private final UserService userService;
 
     @Transactional
-    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
+    public ListResponseDto<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -56,7 +57,15 @@ public class BudgetService {
 
         try {
             Specification<BudgetEntity> spec = BudgetSpecification.filterBudgets(query, category, userId);
-            return repository.findAll(spec, pageable).map(budgetMapper::toDto);
+            Page<BudgetResponseDto> budgetsPage = repository.findAll(spec, pageable).map(budgetMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) budgetsPage.getTotalElements(),
+                    budgetsPage.getNumber(),
+                    budgetsPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(budgetsPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users budgets: ", e);
         }

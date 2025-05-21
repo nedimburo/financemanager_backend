@@ -22,6 +22,8 @@ import org.finance.financemanager.accessibility.users.repositories.UserRepositor
 import org.finance.financemanager.accessibility.users.specifications.UserSpecification;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.*;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,8 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 import static org.finance.financemanager.accessibility.roles.entities.RoleName.CLIENT;
 
@@ -141,10 +141,18 @@ public class UserService {
     }
 
     @Transactional
-    public Page<UserResponseDto> getUsers(Pageable pageable, String query){
+    public ListResponseDto<UserResponseDto> getUsers(Pageable pageable, String query){
         try {
             Specification<UserEntity> spec = UserSpecification.filterUsers(query);
-            return repository.findAll(spec, pageable).map(userMapper::toDto);
+            Page<UserResponseDto> usersPage = repository.findAll(spec, pageable).map(userMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) usersPage.getTotalElements(),
+                    usersPage.getNumber(),
+                    usersPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(usersPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users: ", e);
         }

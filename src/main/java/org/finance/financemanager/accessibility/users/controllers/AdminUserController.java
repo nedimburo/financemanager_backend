@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.entities.UserOrderBy;
 import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +35,7 @@ public class AdminUserController {
     }
 
     @GetMapping("/")
-    public Page<UserResponseDto> getUsers(
+    public ListResponseDto<UserResponseDto> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,

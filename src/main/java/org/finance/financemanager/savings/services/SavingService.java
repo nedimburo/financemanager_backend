@@ -10,6 +10,8 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.savings.entities.SavingEntity;
 import org.finance.financemanager.savings.mappers.SavingMapper;
@@ -18,7 +20,6 @@ import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
 import org.finance.financemanager.savings.specifications.SavingSpecification;
-import org.finance.financemanager.transactions.entities.TransactionEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,7 +43,7 @@ public class SavingService {
     private final UserService userService;
 
     @Transactional
-    public Page<SavingResponseDto> getUsersSavings(Pageable pageable, String query) {
+    public ListResponseDto<SavingResponseDto> getUsersSavings(Pageable pageable, String query) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -57,7 +58,15 @@ public class SavingService {
 
         try {
             Specification<SavingEntity> spec = SavingSpecification.filterTransactions(query, userId);
-            return repository.findAll(spec, pageable).map(savingMapper::toDto);
+            Page<SavingResponseDto> savingsPage = repository.findAll(spec, pageable).map(savingMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) savingsPage.getTotalElements(),
+                    savingsPage.getNumber(),
+                    savingsPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(savingsPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users savings: ", e);
         }
