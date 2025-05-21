@@ -15,7 +15,6 @@ import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
@@ -61,7 +60,7 @@ public class ClientBudgetController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteBudget(@RequestParam String budgetId) {
+    public SuccessResponseDto deleteBudget(@RequestParam String budgetId) {
         return service.deleteBudget(budgetId);
     }
 

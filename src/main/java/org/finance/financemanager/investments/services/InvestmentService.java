@@ -24,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -169,7 +168,7 @@ public class InvestmentService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteInvestment(String investmentId) {
+    public SuccessResponseDto deleteInvestment(String investmentId) {
         UUID investmentUuid;
         try {
             investmentUuid = UUID.fromString(investmentId);
@@ -188,20 +187,19 @@ public class InvestmentService {
         try {
             repository.delete(investment);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                             .timestamp(LocalDateTime.now())
                             .status(HttpStatus.CREATED.value())
                             .message("Investment has been deleted successfully.")
                             .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+                            .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting investment: " + investmentId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
+    public InvestmentValueResponseDto editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
         UUID investmentUuid;
         try {
             investmentUuid = UUID.fromString(investmentId);
@@ -228,7 +226,7 @@ public class InvestmentService {
             response.setMessage("Investment has been successfully updated");
             response.setUpdatedDate(LocalDateTime.now().toString());
             repository.save(updatedInvestment);
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error while updating investment values: ", e);
         }

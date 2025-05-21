@@ -25,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -169,7 +168,7 @@ public class BillReminderService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteBillReminder(String billReminderId) {
+    public SuccessResponseDto deleteBillReminder(String billReminderId) {
         UUID billReminderUuid;
         try {
             billReminderUuid = UUID.fromString(billReminderId);
@@ -188,20 +187,19 @@ public class BillReminderService {
         try {
             repository.delete(billReminder);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                         .timestamp(LocalDateTime.now())
                         .status(HttpStatus.CREATED.value())
                         .message("Bill reminder has been successfully deleted.")
                         .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                        .build());
+                        .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting bill reminder: " + billReminderId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(String billReminderId) {
+    public BillReminderPayResponse editBillReminderPayment(String billReminderId) {
         UUID billReminderUuid;
         try {
             billReminderUuid = UUID.fromString(billReminderId);
@@ -224,7 +222,7 @@ public class BillReminderService {
             response.setMessage("Bill reminder has been successfully updated");
             response.setUpdatedDate(LocalDateTime.now().toString());
             repository.save(updatedBill);
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error updating bill reminder payment details: ", e);
         }

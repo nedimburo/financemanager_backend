@@ -24,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -166,7 +165,7 @@ public class SavingService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteSaving(String savingId) {
+    public SuccessResponseDto deleteSaving(String savingId) {
         UUID savingUuid;
         try {
             savingUuid = UUID.fromString(savingId);
@@ -185,20 +184,19 @@ public class SavingService {
         try {
             repository.delete(saving);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                             .timestamp(LocalDateTime.now())
                             .status(HttpStatus.CREATED.value())
                             .message("Saving has been deleted successfully.")
                             .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+                            .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting saving: " + savingId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<SavingAmountResponseDto> editSavedAmount(String savingId, BigDecimal savedAmount) {
+    public SavingAmountResponseDto editSavedAmount(String savingId, BigDecimal savedAmount) {
         UUID savingUuid;
         try {
             savingUuid = UUID.fromString(savingId);
@@ -221,7 +219,7 @@ public class SavingService {
             response.setMessage("Saving has been successfully updated");
             response.setUpdatedDate(LocalDateTime.now().toString());
             repository.save(updatedSaving);
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error editing saved amount for saving: ", e);
         }

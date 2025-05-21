@@ -24,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -164,7 +163,7 @@ public class BudgetService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteBudget(String budgetId) {
+    public SuccessResponseDto deleteBudget(String budgetId) {
         UUID budgetUuid;
         try {
             budgetUuid = UUID.fromString(budgetId);
@@ -183,13 +182,12 @@ public class BudgetService {
         try {
             repository.delete(budget);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                             .timestamp(LocalDateTime.now())
                             .status(HttpStatus.CREATED.value())
                             .message("Budget has been deleted successfully.")
                             .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+                            .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting budget: " + budgetId, e);
         }

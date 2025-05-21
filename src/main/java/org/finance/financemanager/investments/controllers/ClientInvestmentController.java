@@ -14,7 +14,6 @@ import org.finance.financemanager.investments.services.InvestmentService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
@@ -60,12 +59,12 @@ public class ClientInvestmentController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteInvestment(@RequestParam String investmentId) {
+    public SuccessResponseDto deleteInvestment(@RequestParam String investmentId) {
         return service.deleteInvestment(investmentId);
     }
 
     @PatchMapping("/edit-values/")
-    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(@RequestParam String investmentId , @RequestBody InvestmentValueRequestDto investmentValueRequest) {
+    public InvestmentValueResponseDto editInvestmentValue(@RequestParam String investmentId , @RequestBody InvestmentValueRequestDto investmentValueRequest) {
         return service.editInvestmentValue(investmentId, investmentValueRequest);
     }
 }

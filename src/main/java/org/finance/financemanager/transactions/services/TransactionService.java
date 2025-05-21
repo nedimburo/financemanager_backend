@@ -28,7 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -178,7 +177,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteTransaction(String transactionId) {
+    public SuccessResponseDto deleteTransaction(String transactionId) {
         UUID transactionUuid;
         try {
             transactionUuid = UUID.fromString(transactionId);
@@ -197,13 +196,12 @@ public class TransactionService {
         try {
             repository.delete(transaction);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
-                            .timestamp(LocalDateTime.now())
-                            .status(HttpStatus.CREATED.value())
-                            .message("Transaction has been successfully deleted")
-                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+            return SuccessResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.CREATED.value())
+                        .message("Transaction has been successfully deleted")
+                        .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                        .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting transaction: " + transactionId, e);
         }
@@ -232,7 +230,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Page<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
+    public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
         try {
             String uid = Auth.getUserId();
             Page<TransactionEntity> filteredTransactions;
@@ -245,20 +243,27 @@ public class TransactionService {
             } else {
                 filteredTransactions = repository.findAllByUserId(uid, pageable);
             }
-            return filteredTransactions.map(transactionMapper::toDto);
+            Page<TransactionResponseDto> transactionsPage = filteredTransactions.map(transactionMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) transactionsPage.getTotalElements(),
+                    transactionsPage.getNumber(),
+                    transactionsPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(transactionsPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<ExpenseIncomeResponseDto> getTotalExpenseAndIncomeForYear(Integer year) {
+    public ExpenseIncomeResponseDto getTotalExpenseAndIncomeForYear(Integer year) {
         try {
             String uid = Auth.getUserId();
             BigDecimal expenseTotal = repository.findTotalExpenseByYearAndUserId(year, uid);
             BigDecimal incomeTotal = repository.findTotalIncomeByYearAndUserId(year, uid);
-            ExpenseIncomeResponseDto response = new ExpenseIncomeResponseDto(expenseTotal, incomeTotal);
-            return ResponseEntity.ok(response);
+            return new ExpenseIncomeResponseDto(expenseTotal, incomeTotal);
         } catch (Exception e) {
             throw new RuntimeException("Error getting expense and income for year: " + year, e);
         }

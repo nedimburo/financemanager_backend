@@ -15,7 +15,6 @@ import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
@@ -60,12 +59,12 @@ public class ClientBillReminderController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteBillReminder(@RequestParam String billReminderId) {
+    public SuccessResponseDto deleteBillReminder(@RequestParam String billReminderId) {
         return service.deleteBillReminder(billReminderId);
     }
 
     @PatchMapping("/paid-status/")
-    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@RequestParam String billReminderId) {
+    public BillReminderPayResponse editBillReminderPayment(@RequestParam String billReminderId) {
         return service.editBillReminderPayment(billReminderId);
     }
 }

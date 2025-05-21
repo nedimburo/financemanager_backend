@@ -15,7 +15,6 @@ import org.finance.financemanager.savings.services.SavingService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -62,12 +61,12 @@ public class ClientSavingController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteSaving(@RequestParam String savingId) {
+    public SuccessResponseDto deleteSaving(@RequestParam String savingId) {
         return service.deleteSaving(savingId);
     }
 
     @PatchMapping("/edit-saved-amount/")
-    public ResponseEntity<SavingAmountResponseDto> editSavedAmount(
+    public SavingAmountResponseDto editSavedAmount(
             @RequestParam String savingId,
             @RequestParam BigDecimal savedAmount) {
         return service.editSavedAmount(savingId, savedAmount);
