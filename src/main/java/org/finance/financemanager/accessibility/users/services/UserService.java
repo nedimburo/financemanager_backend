@@ -22,18 +22,17 @@ import org.finance.financemanager.accessibility.users.repositories.UserRepositor
 import org.finance.financemanager.accessibility.users.specifications.UserSpecification;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.*;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 import static org.finance.financemanager.accessibility.roles.entities.RoleName.CLIENT;
 
@@ -56,7 +55,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<RegistrationResponseDto> register(HttpServletRequest request, RegistrationRequestDto registrationRequest) throws Exception {
+    public RegistrationResponseDto register(HttpServletRequest request, RegistrationRequestDto registrationRequest) throws Exception {
         String tokenHeader = request.getHeader("Authorization");
         if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
             throw new BadRequestException("Token header missing or not properly formatted.");
@@ -86,15 +85,14 @@ public class UserService {
             response.setRole(savedUser.getRole().getName());
             response.setRegistrationDate(savedUser.getCreated().toString());
             response.setMessage("User has been successfully registered.");
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(response);
+            return response;
         } catch (FirebaseAuthException e) {
             throw new Exception("Invalid or expired token: " + e.getMessage());
         }
     }
 
     @Transactional
-    public ResponseEntity<UserProfileResponseDto> getUserProfile() throws Exception {
+    public UserProfileResponseDto getUserProfile() throws Exception {
         String uid;
         try {
            uid = Auth.getUserId();
@@ -110,15 +108,14 @@ public class UserService {
         }
 
         try {
-            UserProfileResponseDto responseDto = new UserProfileResponseDto();
-            responseDto.setUserId(user.getId());
-            responseDto.setEmail(user.getEmail());
-            responseDto.setFirstName(user.getFirstName());
-            responseDto.setLastName(user.getLastName());
-            responseDto.setRole(user.getRole().getName());
-            responseDto.setRegistrationDate(user.getCreated().toString());
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(responseDto);
+            UserProfileResponseDto response = new UserProfileResponseDto();
+            response.setUserId(user.getId());
+            response.setEmail(user.getEmail());
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
+            response.setRole(user.getRole().getName());
+            response.setRegistrationDate(user.getCreated().toString());
+            return response;
         } catch (Exception e) {
             throw new Exception("Error while getting user profile data: ", e);
         }
@@ -141,10 +138,18 @@ public class UserService {
     }
 
     @Transactional
-    public Page<UserResponseDto> getUsers(Pageable pageable, String query){
+    public ListResponseDto<UserResponseDto> getUsers(Pageable pageable, String query){
         try {
             Specification<UserEntity> spec = UserSpecification.filterUsers(query);
-            return repository.findAll(spec, pageable).map(userMapper::toDto);
+            Page<UserResponseDto> usersPage = repository.findAll(spec, pageable).map(userMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) usersPage.getTotalElements(),
+                    usersPage.getNumber(),
+                    usersPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(usersPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users: ", e);
         }
@@ -160,7 +165,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<FirebaseUpdateResponseDto> updateFirebaseUser(String uid, String newFirstName, String newLastName, String newEmail, String newPassword) {
+    public FirebaseUpdateResponseDto updateFirebaseUser(String uid, String newFirstName, String newLastName, String newEmail, String newPassword) throws Exception {
         try {
             UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(uid);
             UserEntity updatedUser = getUser(uid);
@@ -197,40 +202,42 @@ public class UserService {
             response.setPasswordUpdated(newPassword != null);
             response.setMessage("User has been successfully updated.");
             response.setUpdatedDate(LocalDateTime.now().toString());
-            return ResponseEntity.ok(response);
+            return response;
         } catch (FirebaseAuthException e) {
-            FirebaseUpdateResponseDto response = new FirebaseUpdateResponseDto();
-            response.setMessage("Error updating user.");
-            response.setUpdatedDate(LocalDateTime.now().toString());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(response);
+            throw new Exception("Firebase user update failed: " + e.getMessage());
         }
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteUser(String userId) {
+    public SuccessResponseDto deleteUser(String userId) {
         try {
             UserEntity user = getUser(userId);
             firebaseAuthService.deleteUser(user.getId());
             repository.deleteById(user.getId());
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
-                            .timestamp(LocalDateTime.now())
-                            .status(HttpStatus.CREATED.value())
-                            .message("User has been deleted successfully.")
-                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+            return SuccessResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.CREATED.value())
+                        .message("User has been deleted successfully.")
+                        .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                        .build();
         } catch (Exception e) {
             throw new RuntimeException("Error while deleting user: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<FinanceOverviewResponseDto> getFinancialOverviewNumbers(){
+    public FinanceOverviewResponseDto getFinancialOverviewNumbers(){
+        String userId;
         try {
-            String uid = Auth.getUserId();
-            UserEntity user = getUser(uid);
+            userId = Auth.getUserId();
+        } catch (Exception e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+        UserEntity user = getUser(userId);
+
+        try {
             FinanceOverviewResponseDto response = new FinanceOverviewResponseDto();
             response.setUserId(user.getId());
             response.setNoOfTransactions(user.getTransactions().size());
@@ -238,7 +245,7 @@ public class UserService {
             response.setNoOfSavings(user.getSavings().size());
             response.setNoOfInvestments(user.getInvestments().size());
             response.setNoOfBudgets(user.getBudgets().size());
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("User not found by the provided uid", e);
         }

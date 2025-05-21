@@ -6,17 +6,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.bill_reminders.entities.BillReminderOrderBy;
-import org.finance.financemanager.bill_reminders.payloads.BillReminderDetailsResponseDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
 import org.finance.financemanager.bill_reminders.services.BillReminderService;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
@@ -32,7 +30,7 @@ public class ClientBillReminderController {
     private final BillReminderService service;
 
     @GetMapping("/")
-    public Page<BillReminderResponseDto> getUsersBillReminders(
+    public ListResponseDto<BillReminderResponseDto> getUsersBillReminders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,
@@ -61,12 +59,12 @@ public class ClientBillReminderController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteBillReminder(@RequestParam String billReminderId) {
+    public SuccessResponseDto deleteBillReminder(@RequestParam String billReminderId) {
         return service.deleteBillReminder(billReminderId);
     }
 
     @PatchMapping("/paid-status/")
-    public ResponseEntity<BillReminderPayResponse> editBillReminderPayment(@RequestParam String billReminderId) {
+    public BillReminderPayResponse editBillReminderPayment(@RequestParam String billReminderId) {
         return service.editBillReminderPayment(billReminderId);
     }
 }

@@ -6,15 +6,15 @@ import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.finance.financemanager.accessibility.auth.payloads.FirebaseUpdateResponseDto;
 import org.finance.financemanager.accessibility.users.entities.UserOrderBy;
 import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
@@ -35,7 +35,7 @@ public class AdminUserController {
     }
 
     @GetMapping("/")
-    public Page<UserResponseDto> getUsers(
+    public ListResponseDto<UserResponseDto> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,
@@ -54,18 +54,18 @@ public class AdminUserController {
     }
 
     @PatchMapping("/update-firebase-user")
-    public ResponseEntity<?> updateFirebaseUser(
+    public FirebaseUpdateResponseDto updateFirebaseUser(
             @RequestParam String uid,
             @RequestParam(required = false) String newFirstName,
             @RequestParam(required = false) String newLastName,
             @RequestParam(required = false) String newEmail,
             @RequestParam(required = false) String newPassword
-    ){
+    ) throws Exception {
         return service.updateFirebaseUser(uid, newFirstName, newLastName, newEmail, newPassword);
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteUser(@RequestParam String userId){
+    public SuccessResponseDto deleteUser(@RequestParam String userId){
         return service.deleteUser(userId);
     }
 }

@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.accessibility.users.payloads.FinanceOverviewResponseDto;
 import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
 import org.finance.financemanager.accessibility.users.services.UserService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,12 +25,12 @@ public class CommonUserController {
     private final UserService service;
 
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileResponseDto> getUserProfile() throws Exception {
+    public UserProfileResponseDto getUserProfile() throws Exception {
         return service.getUserProfile();
     }
 
     @GetMapping("/financial-overview-numbers")
-    public ResponseEntity<FinanceOverviewResponseDto> getFinancialOverviewNumbers() {
+    public FinanceOverviewResponseDto getFinancialOverviewNumbers() {
         return service.getFinancialOverviewNumbers();
     }
 }

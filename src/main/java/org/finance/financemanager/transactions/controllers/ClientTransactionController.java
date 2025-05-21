@@ -6,19 +6,17 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.transactions.entities.TransactionOrderBy;
 import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
-import org.finance.financemanager.transactions.payloads.TransactionDetailsResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
 import org.finance.financemanager.transactions.services.TransactionService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +35,7 @@ public class ClientTransactionController {
     private final TransactionService service;
 
     @GetMapping("/")
-    public Page<TransactionResponseDto> getUsersTransactions(
+    public ListResponseDto<TransactionResponseDto> getUsersTransactions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,
@@ -68,7 +66,7 @@ public class ClientTransactionController {
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<SuccessResponseDto> deleteTransaction(@RequestParam String transactionId) {
+    public SuccessResponseDto deleteTransaction(@RequestParam String transactionId) {
         return service.deleteTransaction(transactionId);
     }
 
@@ -81,7 +79,7 @@ public class ClientTransactionController {
     }
 
     @GetMapping("/filtered-page")
-    public Page<TransactionResponseDto> getFilteredTransactionsPageable(
+    public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year,
             @RequestParam(defaultValue = "0") int page,
@@ -92,7 +90,7 @@ public class ClientTransactionController {
     }
 
     @GetMapping("/total-amounts-yearly")
-    public ResponseEntity<ExpenseIncomeResponseDto> getTotalExpenseAndIncomeForYear(
+    public ExpenseIncomeResponseDto getTotalExpenseAndIncomeForYear(
             @RequestParam Integer year
     ) {
         return service.getTotalExpenseAndIncomeForYear(year);

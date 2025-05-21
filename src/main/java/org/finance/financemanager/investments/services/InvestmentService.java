@@ -10,6 +10,8 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.investments.entities.InvestmentType;
@@ -22,11 +24,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class InvestmentService {
     private final TransactionService transactionService;
 
     @Transactional
-    public Page<InvestmentResponseDto> getUsersInvestments(Pageable pageable, String query, InvestmentType type) {
+    public ListResponseDto<InvestmentResponseDto> getUsersInvestments(Pageable pageable, String query, InvestmentType type) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -57,7 +57,15 @@ public class InvestmentService {
 
         try {
             Specification<InvestmentEntity> spec = InvestmentSpecification.filterInvestments(query, type, userId);
-            return repository.findAll(spec, pageable).map(investmentMapper::toDto);
+            Page<InvestmentResponseDto> investmentPage = repository.findAll(spec, pageable).map(investmentMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) investmentPage.getTotalElements(),
+                    investmentPage.getNumber(),
+                    investmentPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(investmentPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users investments: ", e);
         }
@@ -76,7 +84,21 @@ public class InvestmentService {
         if (!userExists) {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
-        InvestmentEntity investment = getInvestment(investmentId);
+
+        UUID investmentUuid;
+        try {
+            investmentUuid = UUID.fromString(investmentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting investment id to UUID.");
+        }
+
+
+        InvestmentEntity investment;
+        try {
+            investment = getInvestment(investmentUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Investment with id: " + investmentId + " doesn't exist");
+        }
 
         try {
             return investmentMapper.toDto(investment);
@@ -113,8 +135,22 @@ public class InvestmentService {
 
     @Transactional
     public InvestmentResponseDto updateInvestment(String investmentId, InvestmentRequestDto investmentRequest) {
+        UUID investmentUuid;
         try {
-            InvestmentEntity updatedInvestment = getInvestment(investmentId);
+            investmentUuid = UUID.fromString(investmentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting investment id to UUID.");
+        }
+
+
+        InvestmentEntity updatedInvestment;
+        try {
+            updatedInvestment = getInvestment(investmentUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Investment with id: " + investmentId + " doesn't exist");
+        }
+
+        try {
             if (investmentRequest.getType() != null) { updatedInvestment.setType(investmentRequest.getType()); }
             if (investmentRequest.getInvestmentName() != null) { updatedInvestment.setInvestmentName(investmentRequest.getInvestmentName()); }
             if (investmentRequest.getAmountInvested() != null) { updatedInvestment.setAmountInvested(investmentRequest.getAmountInvested()); }
@@ -132,27 +168,54 @@ public class InvestmentService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteInvestment(String investmentId) {
+    public SuccessResponseDto deleteInvestment(String investmentId) {
+        UUID investmentUuid;
         try {
-            InvestmentEntity investment = getInvestment(investmentId);
+            investmentUuid = UUID.fromString(investmentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting investment id to UUID.");
+        }
+
+
+        InvestmentEntity investment;
+        try {
+            investment = getInvestment(investmentUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Investment with id: " + investmentId + " doesn't exist");
+        }
+
+        try {
             repository.delete(investment);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                             .timestamp(LocalDateTime.now())
                             .status(HttpStatus.CREATED.value())
                             .message("Investment has been deleted successfully.")
                             .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+                            .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting investment: " + investmentId, e);
         }
     }
 
     @Transactional
-    public ResponseEntity<InvestmentValueResponseDto> editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
+    public InvestmentValueResponseDto editInvestmentValue(String investmentId, InvestmentValueRequestDto investmentValueRequest) {
+        UUID investmentUuid;
         try {
-            InvestmentEntity updatedInvestment = getInvestment(investmentId);
+            investmentUuid = UUID.fromString(investmentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting investment id to UUID.");
+        }
+
+
+        InvestmentEntity updatedInvestment;
+        try {
+            updatedInvestment = getInvestment(investmentUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Investment with id: " + investmentId + " doesn't exist");
+        }
+
+        try {
             if (investmentValueRequest.getAmountInvested() != null) { updatedInvestment.setAmountInvested(investmentValueRequest.getAmountInvested()); }
             if (investmentValueRequest.getCurrentValue() != null) { updatedInvestment.setCurrentValue(investmentValueRequest.getCurrentValue()); }
             if (investmentValueRequest.getInterestRate() != null) { updatedInvestment.setInterestRate(investmentValueRequest.getInterestRate()); }
@@ -163,13 +226,13 @@ public class InvestmentService {
             response.setMessage("Investment has been successfully updated");
             response.setUpdatedDate(LocalDateTime.now().toString());
             repository.save(updatedInvestment);
-            return ResponseEntity.ok(response);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Error while updating investment values: ", e);
         }
     }
 
-    public InvestmentEntity getInvestment(String investmentId) {
+    public InvestmentEntity getInvestment(UUID investmentId) {
         return repository.findById(investmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Investment not found with id: " + investmentId));
     }

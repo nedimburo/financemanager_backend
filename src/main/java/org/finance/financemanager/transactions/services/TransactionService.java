@@ -12,6 +12,8 @@ import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.finance.financemanager.investments.entities.InvestmentEntity;
 import org.finance.financemanager.transactions.entities.TransactionEntity;
@@ -26,7 +28,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -53,7 +54,7 @@ public class TransactionService {
     private final UserService userService;
 
     @Transactional
-    public Page<TransactionResponseDto> getUsersTransactions(Pageable pageable, String query, TransactionType type, FinanceCategory category) {
+    public ListResponseDto<TransactionResponseDto> getUsersTransactions(Pageable pageable, String query, TransactionType type, FinanceCategory category) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -68,7 +69,15 @@ public class TransactionService {
 
         try {
             Specification<TransactionEntity> spec = TransactionSpecification.filterTransactions(query, type, category, userId);
-            return repository.findAll(spec, pageable).map(transactionMapper::toDto);
+            Page<TransactionResponseDto> transactionPage = repository.findAll(spec, pageable).map(transactionMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) transactionPage.getTotalElements(),
+                    transactionPage.getNumber(),
+                    transactionPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(transactionPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users transactions: ", e);
         }
@@ -88,7 +97,20 @@ public class TransactionService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        TransactionEntity transaction = getTransaction(transactionId);
+        UUID transactionUuid;
+        try {
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity transaction;
+        try {
+            transaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
 
         try {
             return transactionMapper.toDto(transaction);
@@ -123,8 +145,22 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponseDto updateTransaction(String transactionId, TransactionRequestDto transactionRequest) {
+        UUID transactionUuid;
         try {
-            TransactionEntity updatedTransaction = getTransaction(transactionId);
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity updatedTransaction;
+        try {
+            updatedTransaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
+
+        try {
             if (transactionRequest.getType() != null) { updatedTransaction.setType(transactionRequest.getType()); }
             if (transactionRequest.getCategory() != null) { updatedTransaction.setCategory(transactionRequest.getCategory()); }
             if (transactionRequest.getAmount() != null) { updatedTransaction.setAmount(transactionRequest.getAmount()); }
@@ -141,18 +177,31 @@ public class TransactionService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteTransaction(String transactionId) {
+    public SuccessResponseDto deleteTransaction(String transactionId) {
+        UUID transactionUuid;
         try {
-            TransactionEntity transaction = getTransaction(transactionId);
+            transactionUuid = UUID.fromString(transactionId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting transaction id to UUID.");
+        }
+
+
+        TransactionEntity transaction;
+        try {
+            transaction = getTransaction(transactionUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Transaction with id: " + transactionId + " doesn't exist");
+        }
+
+        try {
             repository.delete(transaction);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
-                            .timestamp(LocalDateTime.now())
-                            .status(HttpStatus.CREATED.value())
-                            .message("Transaction has been successfully deleted")
-                            .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+            return SuccessResponseDto.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.CREATED.value())
+                        .message("Transaction has been successfully deleted")
+                        .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
+                        .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting transaction: " + transactionId, e);
         }
@@ -181,7 +230,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Page<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
+    public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
         try {
             String uid = Auth.getUserId();
             Page<TransactionEntity> filteredTransactions;
@@ -194,20 +243,27 @@ public class TransactionService {
             } else {
                 filteredTransactions = repository.findAllByUserId(uid, pageable);
             }
-            return filteredTransactions.map(transactionMapper::toDto);
+            Page<TransactionResponseDto> transactionsPage = filteredTransactions.map(transactionMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) transactionsPage.getTotalElements(),
+                    transactionsPage.getNumber(),
+                    transactionsPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(transactionsPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting filtered transactions: ", e);
         }
     }
 
     @Transactional
-    public ResponseEntity<ExpenseIncomeResponseDto> getTotalExpenseAndIncomeForYear(Integer year) {
+    public ExpenseIncomeResponseDto getTotalExpenseAndIncomeForYear(Integer year) {
         try {
             String uid = Auth.getUserId();
             BigDecimal expenseTotal = repository.findTotalExpenseByYearAndUserId(year, uid);
             BigDecimal incomeTotal = repository.findTotalIncomeByYearAndUserId(year, uid);
-            ExpenseIncomeResponseDto response = new ExpenseIncomeResponseDto(expenseTotal, incomeTotal);
-            return ResponseEntity.ok(response);
+            return new ExpenseIncomeResponseDto(expenseTotal, incomeTotal);
         } catch (Exception e) {
             throw new RuntimeException("Error getting expense and income for year: " + year, e);
         }
@@ -269,7 +325,7 @@ public class TransactionService {
         }
     }
 
-    public TransactionEntity getTransaction(String transactionId) {
+    public TransactionEntity getTransaction(UUID transactionId) {
         return repository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found with id: " + transactionId));
     }

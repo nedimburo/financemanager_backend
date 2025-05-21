@@ -17,12 +17,13 @@ import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
+import org.finance.financemanager.common.payloads.ListResponseDto;
+import org.finance.financemanager.common.payloads.PaginationResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -40,7 +41,7 @@ public class BudgetService {
     private final UserService userService;
 
     @Transactional
-    public Page<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
+    public ListResponseDto<BudgetResponseDto> getUsersBudgets(Pageable pageable, String query, FinanceCategory category) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -55,7 +56,15 @@ public class BudgetService {
 
         try {
             Specification<BudgetEntity> spec = BudgetSpecification.filterBudgets(query, category, userId);
-            return repository.findAll(spec, pageable).map(budgetMapper::toDto);
+            Page<BudgetResponseDto> budgetsPage = repository.findAll(spec, pageable).map(budgetMapper::toDto);
+
+            PaginationResponseDto paging = new PaginationResponseDto(
+                    (int) budgetsPage.getTotalElements(),
+                    budgetsPage.getNumber(),
+                    budgetsPage.getTotalPages()
+            );
+
+            return new ListResponseDto<>(budgetsPage.getContent(), paging);
         } catch (Exception e) {
             throw new RuntimeException("Error getting users budgets: ", e);
         }
@@ -75,7 +84,20 @@ public class BudgetService {
             throw new ResourceNotFoundException("User with ID: " + userId + " doesn't exist");
         }
 
-        BudgetEntity budget = getBudget(budgetId);
+        UUID budgetUuid;
+        try {
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity budget;
+        try {
+            budget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
 
         try {
             return budgetMapper.toDto(budget);
@@ -109,8 +131,22 @@ public class BudgetService {
 
     @Transactional
     public BudgetResponseDto updateBudget(String budgetId, BudgetRequestDto budgetRequest) {
+        UUID budgetUuid;
         try {
-            BudgetEntity updatedBudget = getBudget(budgetId);
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity updatedBudget;
+        try {
+            updatedBudget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
+
+        try {
             if (budgetRequest.getBudgetName() != null) { updatedBudget.setBudgetName(budgetRequest.getBudgetName()); }
             if (budgetRequest.getCategory() != null) { updatedBudget.setCategory(budgetRequest.getCategory()); }
             if (budgetRequest.getBudgetLimit() != null) { updatedBudget.setBudgetLimit(budgetRequest.getBudgetLimit()); }
@@ -127,24 +163,37 @@ public class BudgetService {
     }
 
     @Transactional
-    public ResponseEntity<SuccessResponseDto> deleteBudget(String budgetId) {
+    public SuccessResponseDto deleteBudget(String budgetId) {
+        UUID budgetUuid;
         try {
-            BudgetEntity budget = getBudget(budgetId);
+            budgetUuid = UUID.fromString(budgetId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while converting budget id to UUID.");
+        }
+
+
+        BudgetEntity budget;
+        try {
+            budget = getBudget(budgetUuid);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Budget with id: " + budgetId + " doesn't exist");
+        }
+
+        try {
             repository.delete(budget);
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(SuccessResponseDto.builder()
+            return SuccessResponseDto.builder()
                             .timestamp(LocalDateTime.now())
                             .status(HttpStatus.CREATED.value())
                             .message("Budget has been deleted successfully.")
                             .path(ServletUriComponentsBuilder.fromCurrentRequest().toUriString())
-                            .build());
+                            .build();
         } catch (Exception e){
             throw new RuntimeException("Error deleting budget: " + budgetId, e);
         }
     }
 
-    public BudgetEntity getBudget(String budgetId) {
+    public BudgetEntity getBudget(UUID budgetId) {
         return repository.findById(budgetId)
                 .orElseThrow(() -> new EntityNotFoundException("Budget not found with id: " + budgetId));
     }
