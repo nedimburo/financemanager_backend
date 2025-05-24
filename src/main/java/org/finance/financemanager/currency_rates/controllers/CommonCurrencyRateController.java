@@ -1,5 +1,6 @@
 package org.finance.financemanager.currency_rates.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -25,6 +26,9 @@ public class CommonCurrencyRateController {
 
     private final CurrencyRateService service;
 
+    @Operation(
+            description = "Get all available currency rates."
+    )
     @GetMapping("/")
     public List<CurrencyRateDto> getCurrencyRates() {
         return service.getCurrencyRates();

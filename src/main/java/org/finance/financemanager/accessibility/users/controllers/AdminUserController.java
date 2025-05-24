@@ -1,6 +1,7 @@
 package org.finance.financemanager.accessibility.users.controllers;
 
 import com.google.firebase.auth.UserRecord;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -29,11 +30,17 @@ public class AdminUserController {
 
     private final UserService service;
 
+    @Operation(
+            description = "Get details for a specific user by providing a user ID."
+    )
     @GetMapping("/specific")
     public UserResponseDto getUserById(@RequestParam String userId) {
         return service.getUserById(userId);
     }
 
+    @Operation(
+            description = "Fetch paginated results of all available users."
+    )
     @GetMapping("/")
     public ListResponseDto<UserResponseDto> getUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -48,11 +55,17 @@ public class AdminUserController {
         return service.getUsers(pageable, query);
     }
 
+    @Operation(
+            description = "Fetch Firebase user by providing users email."
+    )
     @GetMapping("/firebase-user")
     public UserRecord getFirebaseUserByEmail(@RequestParam String email) {
         return service.getFirebaseUserByEmail(email);
     }
 
+    @Operation(
+            description = "Update Firebase user profile information."
+    )
     @PatchMapping("/update-firebase-user")
     public FirebaseUpdateResponseDto updateFirebaseUser(
             @RequestParam String uid,
@@ -64,6 +77,9 @@ public class AdminUserController {
         return service.updateFirebaseUser(uid, newFirstName, newLastName, newEmail, newPassword);
     }
 
+    @Operation(
+            description = "Delete a specific user by providing user ID. Also deletes the user from Firebase."
+    )
     @DeleteMapping("/")
     public SuccessResponseDto deleteUser(@RequestParam String userId){
         return service.deleteUser(userId);

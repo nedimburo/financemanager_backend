@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -25,6 +26,9 @@ import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NA
 @Tags(value = {@Tag(name = "Public | Enums"), @Tag(name = OPERATION_ID_NAME + "PublicEnums")})
 public class CommonEnumController {
 
+    @Operation(
+            description = "Get all finance categories that are available for management."
+    )
     @GetMapping("/finance-categories")
     public List<String> getFinanceCategories() {
         return Arrays.stream(FinanceCategory.values())
@@ -32,6 +36,9 @@ public class CommonEnumController {
                 .collect(Collectors.toList());
     }
 
+    @Operation(
+            description = "Get all types of investments that user can select for investment finances."
+    )
     @GetMapping("/investment-types")
     public List<String> getInvestmentTypes() {
         return Arrays.stream(InvestmentType.values())

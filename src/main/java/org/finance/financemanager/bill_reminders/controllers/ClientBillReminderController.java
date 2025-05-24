@@ -1,5 +1,6 @@
 package org.finance.financemanager.bill_reminders.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class ClientBillReminderController {
 
     private final BillReminderService service;
 
+    @Operation(
+            description = "Fetch paginated results of all bill reminders made by the user."
+    )
     @GetMapping("/")
     public ListResponseDto<BillReminderResponseDto> getUsersBillReminders(
             @RequestParam(defaultValue = "0") int page,
@@ -43,26 +47,41 @@ public class ClientBillReminderController {
         return service.getUsersBillReminders(pageable, query);
     }
 
+    @Operation(
+            description = "Get details for a specific bill reminder made by a user by providing a bill reminder ID."
+    )
     @GetMapping("/specific")
     public BillReminderResponseDto getBillReminderById(@RequestParam String billReminderId) {
         return service.getBillReminderById(billReminderId);
     }
 
+    @Operation(
+            description = "This endpoint is used for creating and storing a new bill reminder."
+    )
     @PostMapping("/")
     public BillReminderResponseDto createBillReminder(@RequestBody BillReminderRequestDto billReminderRequest) {
         return service.createBillReminder(billReminderRequest);
     }
 
+    @Operation(
+            description = "Update an existing bill reminder by providing bill reminder ID alongside the new form data."
+    )
     @PatchMapping("/")
     public BillReminderResponseDto updateBillReminder(@RequestParam String billReminderId , @RequestBody BillReminderRequestDto billReminderRequest) {
         return service.updateBillReminder(billReminderId, billReminderRequest);
     }
 
+    @Operation(
+            description = "Delete a specific bill reminder made by a user by providing a bill reminder ID."
+    )
     @DeleteMapping("/")
     public SuccessResponseDto deleteBillReminder(@RequestParam String billReminderId) {
         return service.deleteBillReminder(billReminderId);
     }
 
+    @Operation(
+            description = "Toggle paid status for a specific bill reminder by providing a bill reminder ID."
+    )
     @PatchMapping("/paid-status/")
     public BillReminderPayResponse editBillReminderPayment(@RequestParam String billReminderId) {
         return service.editBillReminderPayment(billReminderId);

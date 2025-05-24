@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -26,6 +27,9 @@ public class CommonFilesController {
 
     private final FileCreatorService service;
 
+    @Operation(
+            description = "Download a financial report for a certain period in the CSV format."
+    )
     @PostMapping("/download-csv")
     public ResponseEntity<byte[]> downloadCsv(
             @RequestParam(required = false) Integer month,
@@ -34,6 +38,9 @@ public class CommonFilesController {
         return service.downloadCsv(month, year);
     }
 
+    @Operation(
+            description = "Download a financial report for a certain period in the Excel format."
+    )
     @PostMapping("/download-excel")
     public ResponseEntity<byte[]> downloadExcel(
             @RequestParam(required = false) Integer month,

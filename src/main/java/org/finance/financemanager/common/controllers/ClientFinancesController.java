@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class ClientFinancesController {
 
     private final GeneralFinancesService service;
 
+    @Operation(
+            description = "Get detailed finance management data for a currently logged in user."
+    )
     @GetMapping("/general-finances")
     public FinanceInformationResponseDto getGeneralFinances() {
         return service.getGeneralFinances();

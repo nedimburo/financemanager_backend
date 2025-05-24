@@ -1,5 +1,6 @@
 package org.finance.financemanager.savings.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -31,6 +32,9 @@ public class ClientSavingController {
 
     private final SavingService service;
 
+    @Operation(
+            description = "Fetch paginated results of all savings made by the user."
+    )
     @GetMapping("/")
     public ListResponseDto<SavingResponseDto> getUsersSavings(
             @RequestParam(defaultValue = "0") int page,
@@ -45,26 +49,41 @@ public class ClientSavingController {
         return service.getUsersSavings(pageable, query);
     }
 
+    @Operation(
+            description = "Get details for a specific saving made by a user by providing a saving ID."
+    )
     @GetMapping("/specific")
     public SavingResponseDto getSavingById(@RequestParam String savingId) {
         return service.getSavingById(savingId);
     }
 
+    @Operation(
+            description = "This endpoint is used for creating and storing a new saving."
+    )
     @PostMapping("/")
     public SavingResponseDto createSaving(@RequestBody SavingRequestDto savingRequest) {
         return service.createSaving(savingRequest);
     }
 
+    @Operation(
+            description = "Update an existing saving by providing saving ID alongside the new form data."
+    )
     @PatchMapping("/")
     public SavingResponseDto updateSaving(@RequestParam String savingId , @RequestBody SavingRequestDto savingRequest) {
         return service.updateSaving(savingId, savingRequest);
     }
 
+    @Operation(
+            description = "Delete a specific saving made by a user by providing a saving ID."
+    )
     @DeleteMapping("/")
     public SuccessResponseDto deleteSaving(@RequestParam String savingId) {
         return service.deleteSaving(savingId);
     }
 
+    @Operation(
+            description = "Update saved amount for a specific saving by providing a saving ID."
+    )
     @PatchMapping("/edit-saved-amount/")
     public SavingAmountResponseDto editSavedAmount(
             @RequestParam String savingId,

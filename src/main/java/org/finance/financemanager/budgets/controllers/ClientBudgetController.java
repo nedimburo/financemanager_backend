@@ -1,5 +1,6 @@
 package org.finance.financemanager.budgets.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class ClientBudgetController {
 
     private final BudgetService service;
 
+    @Operation(
+            description = "Fetch paginated results of all budgets made by the user."
+    )
     @GetMapping("/")
     public ListResponseDto<BudgetResponseDto> getUsersBudgets(
             @RequestParam(defaultValue = "0") int page,
@@ -44,21 +48,33 @@ public class ClientBudgetController {
         return service.getUsersBudgets(pageable, query, category);
     }
 
+    @Operation(
+            description = "Get details for a specific budget made by a user by providing a budget ID."
+    )
     @GetMapping("/specific")
     public BudgetResponseDto getBudgetById(@RequestParam String budgetId) {
         return service.getBudgetById(budgetId);
     }
 
+    @Operation(
+            description = "This endpoint is used for creating and storing a new budget."
+    )
     @PostMapping("/")
     public BudgetResponseDto createBudget(@RequestBody BudgetRequestDto budgetRequest) {
         return service.createBudget(budgetRequest);
     }
 
+    @Operation(
+            description = "Update an existing budget by providing budget ID alongside the new form data."
+    )
     @PatchMapping("/")
     public BudgetResponseDto updateBudget(@RequestParam String budgetId , @RequestBody BudgetRequestDto budgetRequest) {
         return service.updateBudget(budgetId, budgetRequest);
     }
 
+    @Operation(
+            description = "Delete a specific budget made by a user by providing a budget ID."
+    )
     @DeleteMapping("/")
     public SuccessResponseDto deleteBudget(@RequestParam String budgetId) {
         return service.deleteBudget(budgetId);

@@ -1,5 +1,6 @@
 package org.finance.financemanager.accessibility.users.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import lombok.Getter;
@@ -24,11 +25,17 @@ public class CommonUserController {
 
     private final UserService service;
 
+    @Operation(
+            description = "Get details for a currently logged in user."
+    )
     @GetMapping("/profile")
     public UserProfileResponseDto getUserProfile() throws Exception {
         return service.getUserProfile();
     }
 
+    @Operation(
+            description = "Endpoint used for retrieving number of finances that user is currently managing."
+    )
     @GetMapping("/financial-overview-numbers")
     public FinanceOverviewResponseDto getFinancialOverviewNumbers() {
         return service.getFinancialOverviewNumbers();
