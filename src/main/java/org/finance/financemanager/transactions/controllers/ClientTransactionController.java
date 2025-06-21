@@ -18,8 +18,10 @@ import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -92,9 +94,11 @@ public class ClientTransactionController {
     @GetMapping("/filtered")
     public List<TransactionResponseDto> getFilteredTransactions(
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return service.getFilteredTransactions(month, year);
+        return service.getFilteredTransactions(month, year, startDate, endDate);
     }
 
     @Operation(
@@ -104,11 +108,13 @@ public class ClientTransactionController {
     public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return service.getFilteredTransactionsPageable(month, year, pageable);
+        return service.getFilteredTransactionsPageable(month, year, startDate, endDate, pageable);
     }
 
     @Operation(

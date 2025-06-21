@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.common.services.FileCreatorService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import static org.finance.financemanager.common.config.Constants.OPERATION_ID_NAME;
 
@@ -33,9 +35,11 @@ public class CommonFilesController {
     @PostMapping("/download-csv")
     public ResponseEntity<byte[]> downloadCsv(
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ){
-        return service.downloadCsv(month, year);
+        return service.downloadCsv(month, year, startDate, endDate);
     }
 
     @Operation(
@@ -44,8 +48,10 @@ public class CommonFilesController {
     @PostMapping("/download-excel")
     public ResponseEntity<byte[]> downloadExcel(
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) throws IOException {
-        return service.downloadExcel(month, year);
+        return service.downloadExcel(month, year, startDate, endDate);
     }
 }

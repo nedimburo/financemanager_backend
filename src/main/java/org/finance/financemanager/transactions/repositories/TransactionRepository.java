@@ -9,10 +9,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, UUID>, JpaSpecificationExecutor<TransactionEntity> {
+    List<TransactionEntity> findAllByUserId(String userId);
     Page<TransactionEntity> findAllByUserId(String userId, Pageable pageable);
     @Query("SELECT SUM(t.amount) FROM TransactionEntity t WHERE t.type = 'EXPENSE' AND t.user.id = :userId")
     BigDecimal findTotalExpenseByUserId(@Param("userId") String userId);
@@ -50,5 +52,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query("SELECT SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END)" +
             "FROM TransactionEntity t WHERE YEAR(t.date) = :year AND MONTH(t.date) = :month AND t.user.id = :userId")
     BigDecimal findTotalIncomeByYearAndMonthAndUserId(@Param("year") Integer year, @Param("month") Integer month, @Param("userId") String userId);
-
+    List<TransactionEntity> findByUserIdAndDateBetween(String userId, LocalDateTime startDate, LocalDateTime endDate);
+    Page<TransactionEntity> findByUserIdAndDateBetween(String userId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 }
