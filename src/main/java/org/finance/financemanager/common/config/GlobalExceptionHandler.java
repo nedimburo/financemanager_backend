@@ -1,5 +1,6 @@
 package org.finance.financemanager.common.config;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import org.finance.financemanager.common.exceptions.*;
 import org.finance.financemanager.common.payloads.ErrorResponseDto;
@@ -13,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 
+@Hidden
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

@@ -2,6 +2,8 @@ package org.finance.financemanager.accessibility.users.mappers;
 
 import org.finance.financemanager.accessibility.roles.entities.RoleName;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
+import org.finance.financemanager.accessibility.users.payloads.RegistrationResponseDto;
+import org.finance.financemanager.accessibility.users.payloads.UserProfileResponseDto;
 import org.finance.financemanager.accessibility.users.payloads.UserResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +21,19 @@ public interface UserMapper {
             @Mapping(target = "numberOfTransactions", expression = "java(getTransactionCount(userEntity))")
     })
     UserResponseDto toDto(UserEntity userEntity);
+
+    @Mappings({
+            @Mapping(source = "created", target = "registrationDate"),
+            @Mapping(target = "role", expression = "java(getRole(userEntity))"),
+    })
+    RegistrationResponseDto toRegistrationDto(UserEntity userEntity);
+
+    @Mappings({
+            @Mapping(source = "id", target = "userId"),
+            @Mapping(source = "created", target = "registrationDate"),
+            @Mapping(target = "role", expression = "java(getRole(userEntity))"),
+    })
+    UserProfileResponseDto toUserProfileDto(UserEntity userEntity);
 
     default RoleName getRole(UserEntity user) {
         return user.getRole().getName();

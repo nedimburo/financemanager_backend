@@ -78,12 +78,7 @@ public class UserService {
             newUser.setRole(roleService.findByName(CLIENT));
             UserEntity savedUser = repository.save(newUser);
 
-            RegistrationResponseDto response = new RegistrationResponseDto();
-            response.setEmail(savedUser.getEmail());
-            response.setFirstName(savedUser.getFirstName());
-            response.setLastName(savedUser.getLastName());
-            response.setRole(savedUser.getRole().getName());
-            response.setRegistrationDate(savedUser.getCreated().toString());
+            RegistrationResponseDto response = userMapper.toRegistrationDto(savedUser);
             response.setMessage("User has been successfully registered.");
             return response;
         } catch (FirebaseAuthException e) {
@@ -108,14 +103,7 @@ public class UserService {
         }
 
         try {
-            UserProfileResponseDto response = new UserProfileResponseDto();
-            response.setUserId(user.getId());
-            response.setEmail(user.getEmail());
-            response.setFirstName(user.getFirstName());
-            response.setLastName(user.getLastName());
-            response.setRole(user.getRole().getName());
-            response.setRegistrationDate(user.getCreated().toString());
-            return response;
+            return userMapper.toUserProfileDto(user);
         } catch (Exception e) {
             throw new Exception("Error while getting user profile data: ", e);
         }
