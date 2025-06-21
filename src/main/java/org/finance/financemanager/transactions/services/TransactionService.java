@@ -10,6 +10,7 @@ import org.finance.financemanager.accessibility.users.services.UserService;
 import org.finance.financemanager.bill_reminders.entities.BillReminderEntity;
 import org.finance.financemanager.common.config.Auth;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.common.exceptions.BadRequestException;
 import org.finance.financemanager.common.exceptions.ResourceNotFoundException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.ListResponseDto;
@@ -32,7 +33,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,18 +211,33 @@ public class TransactionService {
     }
 
     @Transactional
-    public List<TransactionResponseDto> getFilteredTransactions(Integer month, Integer year) {
+    public List<TransactionResponseDto> getFilteredTransactions(Integer month, Integer year, LocalDate startDate, LocalDate endDate) {
         try {
-            String uid = Auth.getUserId();
+            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+                throw new BadRequestException("Start date must be before end date.");
+            }
+
+            String userId;
+            try {
+                userId = Auth.getUserId();
+            } catch (Exception e) {
+                throw new UnauthorizedException(e.getMessage());
+            }
             List<TransactionEntity> filteredTransactions;
-            if (month != null && year != null) {
-                filteredTransactions = repository.findByMonthAndYearAndByUserId(uid, month, year);
+
+            if (startDate != null && endDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+                filteredTransactions = repository.findByUserIdAndDateBetween(userId, startDateTime, endDateTime);
+            }
+            else if (month != null && year != null) {
+                filteredTransactions = repository.findByMonthAndYearAndByUserId(userId, month, year);
             } else if (month != null) {
-                filteredTransactions = repository.findByMonthAndByUserId(uid, month);
+                filteredTransactions = repository.findByMonthAndByUserId(userId, month);
             } else if (year != null) {
-                filteredTransactions = repository.findByYearAndByUserId(uid, year);
+                filteredTransactions = repository.findByYearAndByUserId(userId, year);
             } else {
-                filteredTransactions = repository.findAll();
+                filteredTransactions = repository.findAllByUserId(userId);
             }
             return filteredTransactions.stream()
                     .map(transactionMapper::toDto)
@@ -230,18 +248,33 @@ public class TransactionService {
     }
 
     @Transactional
-    public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, Pageable pageable) {
+    public ListResponseDto<TransactionResponseDto> getFilteredTransactionsPageable(Integer month, Integer year, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         try {
-            String uid = Auth.getUserId();
+            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+                throw new BadRequestException("Start date must be before end date.");
+            }
+
+            String userId;
+            try {
+                userId = Auth.getUserId();
+            } catch (Exception e) {
+                throw new UnauthorizedException(e.getMessage());
+            }
             Page<TransactionEntity> filteredTransactions;
-            if (month != null && year != null) {
-                filteredTransactions = repository.findByMonthAndYearAndByUserIdPageable(uid, month, year, pageable);
+
+            if (startDate != null && endDate != null) {
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+                filteredTransactions = repository.findByUserIdAndDateBetween(userId, startDateTime, endDateTime, pageable);
+            }
+            else if (month != null && year != null) {
+                filteredTransactions = repository.findByMonthAndYearAndByUserIdPageable(userId, month, year, pageable);
             } else if (month != null) {
-                filteredTransactions = repository.findByMonthAndByUserIdPageable(uid, month, pageable);
+                filteredTransactions = repository.findByMonthAndByUserIdPageable(userId, month, pageable);
             } else if (year != null) {
-                filteredTransactions = repository.findByYearAndByUserIdPageable(uid, year, pageable);
+                filteredTransactions = repository.findByYearAndByUserIdPageable(userId, year, pageable);
             } else {
-                filteredTransactions = repository.findAllByUserId(uid, pageable);
+                filteredTransactions = repository.findAllByUserId(userId, pageable);
             }
             Page<TransactionResponseDto> transactionsPage = filteredTransactions.map(transactionMapper::toDto);
 

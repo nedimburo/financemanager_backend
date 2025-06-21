@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -29,8 +30,8 @@ public class FileCreatorService {
     private final TransactionService transactionService;
 
     @Transactional
-    public ResponseEntity<byte[]> downloadCsv(Integer month, Integer year) {
-        List<TransactionResponseDto> selectedTransactions = transactionService.getFilteredTransactions(month, year);
+    public ResponseEntity<byte[]> downloadCsv(Integer month, Integer year, LocalDate startDate, LocalDate endDate) {
+        List<TransactionResponseDto> selectedTransactions = transactionService.getFilteredTransactions(month, year, startDate, endDate);
         StringBuilder csvContent = new StringBuilder();
         csvContent.append("Description,Type,Category,Amount,Date of transactions,Saved date\n");
         for (TransactionResponseDto transaction : selectedTransactions) {
@@ -53,8 +54,8 @@ public class FileCreatorService {
     }
 
     @Transactional
-    public ResponseEntity<byte[]> downloadExcel(Integer month, Integer year) throws IOException {
-        List<TransactionResponseDto> selectedTransactions = transactionService.getFilteredTransactions(month, year);
+    public ResponseEntity<byte[]> downloadExcel(Integer month, Integer year, LocalDate startDate, LocalDate endDate) throws IOException {
+        List<TransactionResponseDto> selectedTransactions = transactionService.getFilteredTransactions(month, year, startDate, endDate);
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Transactions");
 

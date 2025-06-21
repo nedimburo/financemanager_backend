@@ -1,5 +1,6 @@
 package org.finance.financemanager.accessibility.users.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,10 @@ public class PublicUserController {
 
     private final UserService service;
 
+    @Operation(
+            summary = "Bearer token is required for this endpoint.",
+            description = "Register new user by providing Firebase bearer token alongside the registration form data."
+    )
     @PostMapping("/register")
     public RegistrationResponseDto register(HttpServletRequest request, @RequestBody @Valid RegistrationRequestDto registrationRequest) throws Exception {
         return service.register(request, registrationRequest);

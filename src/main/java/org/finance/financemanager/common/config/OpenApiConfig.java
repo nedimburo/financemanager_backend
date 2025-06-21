@@ -57,7 +57,9 @@ public class OpenApiConfig {
         updateOperationName(operation);
         updateOperationParameters(operation);
         operation.setTags(operation.getTags().stream().filter(item -> !item.startsWith(OPERATION_ID_NAME) && !item.startsWith(OPERATION_ID_PATH_VARIABLE)).toList());
-        operation.setSummary(getSummary(operation.getTags()));
+        if (operation.getSummary() == null || operation.getSummary().isEmpty()) {
+            operation.setSummary(getSummary(operation.getTags()));
+        }
     }
 
     private void updateOperationName(Operation operation) {
