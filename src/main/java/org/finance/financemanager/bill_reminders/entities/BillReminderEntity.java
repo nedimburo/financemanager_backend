@@ -6,9 +6,12 @@ import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.common.entities.Auditable;
+import org.finance.financemanager.files.entities.FileEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,4 +44,7 @@ public class BillReminderEntity extends Auditable {
 
     @Column(name = "is_paid")
     private Boolean isPaid;
+
+    @OneToMany(mappedBy = "billReminder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileEntity> files = new ArrayList<>();
 }

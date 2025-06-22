@@ -7,6 +7,9 @@ import org.finance.financemanager.common.enums.FinanceTypes;
 import org.finance.financemanager.common.exceptions.BadRequestException;
 import org.finance.financemanager.common.exceptions.UnauthorizedException;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
+import org.finance.financemanager.files.entities.FileEntity;
+import org.finance.financemanager.files.entities.FileType;
+import org.finance.financemanager.files.services.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -28,6 +32,7 @@ import java.util.UUID;
 public class StorageService {
 
     private final WebClient webClient;
+    private final FileService fileService;
 
     @Value("${supabase.url}")
     private String supabaseUrl;
@@ -38,9 +43,17 @@ public class StorageService {
     @Value("${supabase.bucket}")
     private String bucket;
 
-    public SuccessResponseDto uploadFile(MultipartFile file, FinanceTypes financialType) throws IOException {
+    public SuccessResponseDto uploadFile(MultipartFile file, FinanceTypes financialType, String itemId) throws IOException {
         if (file.isEmpty()) {
             throw new BadRequestException("File is empty.");
+        }
+
+        UUID itemUuid;
+
+        try {
+            itemUuid = UUID.fromString(itemId);
+        } catch (Exception e) {
+            throw new BadRequestException("Error while converting item id to UUID.");
         }
 
         String userId;
@@ -52,6 +65,13 @@ public class StorageService {
 
         String newFilename = this.generateUniqueFileName(file);
         String path = userId + "/" + financialType + "/" + newFilename;
+        String publicUrl = this.getPublicUrl(path);
+        FileType fileType = this.detectFileType(file);
+
+        FileEntity savedFile = fileService.saveFile(financialType, fileType, publicUrl, itemUuid);
+        if (savedFile == null) {
+            throw new RuntimeException("Error while saving file.");
+        }
 
         webClient.put()
                 .uri(supabaseUrl + "/storage/v1/object/" + bucket + "/" + path)
@@ -62,8 +82,6 @@ public class StorageService {
                 .retrieve()
                 .toBodilessEntity()
                 .block();
-
-        String publicUrl = this.getPublicUrl(path);
 
         return SuccessResponseDto.builder()
                 .timestamp(LocalDateTime.now())
@@ -104,5 +122,20 @@ public class StorageService {
         String randomUUID = UUID.randomUUID().toString().substring(0, 8);
 
         return timestamp + "_" + randomUUID + extension;
+    }
+
+    private FileType detectFileType(MultipartFile file) {
+        String originalName = file.getOriginalFilename();
+        if (originalName == null) {
+            throw new IllegalArgumentException("File name is missing");
+        }
+
+        String extension = originalName.substring(originalName.lastIndexOf(".")).toLowerCase();
+
+        if (List.of(".jpg", ".jpeg", ".png", ".webp").contains(extension)) {
+            return FileType.IMAGE;
+        } else {
+            return FileType.DOCUMENT;
+        }
     }
 }

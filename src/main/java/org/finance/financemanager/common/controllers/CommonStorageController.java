@@ -33,9 +33,10 @@ public class CommonStorageController {
     @PostMapping("/upload")
     public SuccessResponseDto uploadFile(
             @RequestParam MultipartFile file,
-            @RequestParam FinanceTypes financialType
+            @RequestParam FinanceTypes financialType,
+            @RequestParam String itemId
     ) throws IOException {
-        return service.uploadFile(file, financialType);
+        return service.uploadFile(file, financialType, itemId);
     }
 
     @Operation(

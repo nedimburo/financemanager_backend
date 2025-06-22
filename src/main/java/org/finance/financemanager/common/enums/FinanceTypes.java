@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum FinanceTypes {
     TRANSACTIONS("transactions"),
-    BILL_REMINDERS("bill+reminders"),
+    BILL_REMINDERS("bill_reminders"),
     INVESTMENTS("investments"),
     BUDGETS("budgets"),
     SAVINGS("savings");

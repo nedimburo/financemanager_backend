@@ -32,17 +32,17 @@ public class CurrencyRateService {
     private final CacheManager cacheManager;
     private final CurrencyRateMapper currencyRateMapper;
 
-    @Scheduled(cron = "0 0 0 * * *")
-    @Transactional
-    public void scheduledUpdateExchangeRates() {
-        updateExchangeRates();
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    public void onApplicationStartup() {
-        updateExchangeRates();
-    }
+//    @Scheduled(cron = "0 0 0 * * *")
+//    @Transactional
+//    public void scheduledUpdateExchangeRates() {
+//        updateExchangeRates();
+//    }
+//
+//    @EventListener(ApplicationReadyEvent.class)
+//    @Transactional
+//    public void onApplicationStartup() {
+//        updateExchangeRates();
+//    }
 
 
     @Transactional

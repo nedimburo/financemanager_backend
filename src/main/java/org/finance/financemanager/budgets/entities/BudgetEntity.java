@@ -7,9 +7,12 @@ import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.common.entities.Auditable;
 import org.finance.financemanager.common.enums.FinanceCategory;
+import org.finance.financemanager.files.entities.FileEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -43,4 +46,7 @@ public class BudgetEntity extends Auditable {
 
     @Column(name = "end_date")
     private LocalDateTime endDate;
+
+    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileEntity> files = new ArrayList<>();
 }
