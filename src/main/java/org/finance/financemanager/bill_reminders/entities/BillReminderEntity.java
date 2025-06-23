@@ -45,6 +45,11 @@ public class BillReminderEntity extends Auditable {
     @Column(name = "is_paid")
     private Boolean isPaid;
 
-    @OneToMany(mappedBy = "billReminder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileEntity> files = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "files_bill_reminders",
+            joinColumns = @JoinColumn(name = "bill_reminder_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<FileEntity> files;
 }

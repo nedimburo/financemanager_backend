@@ -7,9 +7,4 @@ import java.util.List;
 import java.util.UUID;
 
 public interface FileRepository extends JpaRepository<FileEntity, UUID> {
-    List<FileEntity> findByTransactionId(UUID transactionId);
-    List<FileEntity> findByBillReminderId(UUID billReminderId);
-    List<FileEntity> findByInvestmentId(UUID investmentId);
-    List<FileEntity> findByBudgetId(UUID budgetId);
-    List<FileEntity> findBySavingId(UUID savingId);
 }

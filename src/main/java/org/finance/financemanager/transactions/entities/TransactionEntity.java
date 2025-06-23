@@ -48,6 +48,11 @@ public class TransactionEntity extends Auditable {
     @Column(name = "date")
     private LocalDateTime date;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileEntity> files = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "files_transactions",
+            joinColumns = @JoinColumn(name = "transaction_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<FileEntity> files;
 }

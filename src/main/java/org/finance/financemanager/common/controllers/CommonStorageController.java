@@ -46,4 +46,23 @@ public class CommonStorageController {
     public ResponseEntity<byte[]> downloadFile(@RequestParam String filePath) {
         return service.downloadFile(filePath);
     }
+
+    @Operation(
+            description = "Delete a specific file by providing file ID."
+    )
+    @DeleteMapping("/specific")
+    public SuccessResponseDto deleteFile(@RequestParam String fileId) {
+        return service.deleteFile(fileId);
+    }
+
+    @Operation(
+            description = "Delete all files for a financial item by providing financial type and item ID."
+    )
+    @DeleteMapping("/all")
+    public SuccessResponseDto deleteAllFilesForFinancialItem(
+        @RequestParam String itemId,
+        @RequestParam FinanceTypes financialType
+    ) {
+        return service.deleteAllFilesForFinancialItem(itemId, financialType);
+    }
 }

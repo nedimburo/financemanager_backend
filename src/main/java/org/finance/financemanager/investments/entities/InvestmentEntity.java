@@ -52,6 +52,11 @@ public class InvestmentEntity extends Auditable {
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @OneToMany(mappedBy = "investment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileEntity> files = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "files_investments",
+            joinColumns = @JoinColumn(name = "investment_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<FileEntity> files;
 }

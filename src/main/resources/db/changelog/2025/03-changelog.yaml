@@ -1,0 +1,287 @@
+databaseChangeLog:
+- changeSet:
+    id: 1750705167068-16
+    author: nedim.buro (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: files
+        constraintName: FK84578j0pqvuvppqabhn07k87g
+- changeSet:
+    id: 1750705167068-17
+    author: nedim.buro (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: files
+        constraintName: FK8irhb4tcsf8o7gvyiwdcasyup
+- changeSet:
+    id: 1750705167068-18
+    author: nedim.buro (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: files
+        constraintName: FKbbg82fj2ixbniu2swb1j3n65e
+- changeSet:
+    id: 1750705167068-19
+    author: nedim.buro (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: files
+        constraintName: FKbvbn8iiq9e5it8fl9w9xbob3i
+- changeSet:
+    id: 1750705167068-20
+    author: nedim.buro (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: files
+        constraintName: FKk6hv5ol7dbbpfwbmgrrhikvmb
+- changeSet:
+    id: 1750705167068-1
+    author: nedim.buro (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: bill_reminder_id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: file_id
+            type: UUID
+        tableName: files_bill_reminders
+- changeSet:
+    id: 1750705167068-2
+    author: nedim.buro (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: budget_id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: file_id
+            type: UUID
+        tableName: files_budgets
+- changeSet:
+    id: 1750705167068-3
+    author: nedim.buro (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: investment_id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: file_id
+            type: UUID
+        tableName: files_investments
+- changeSet:
+    id: 1750705167068-4
+    author: nedim.buro (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: saving_id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: file_id
+            type: UUID
+        tableName: files_savings
+- changeSet:
+    id: 1750705167068-5
+    author: nedim.buro (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: transaction_id
+            type: UUID
+        - column:
+            constraints:
+              nullable: false
+            name: file_id
+            type: UUID
+        tableName: files_transactions
+- changeSet:
+    id: 1750705167068-6
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: file_id
+        baseTableName: files_investments
+        constraintName: FK39eks2mg8428d15k10c6gssl3
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: files
+        validate: true
+- changeSet:
+    id: 1750705167068-7
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: budget_id
+        baseTableName: files_budgets
+        constraintName: FK3wetc5dqxa0hpoi9uwgkyotlq
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: budgets
+        validate: true
+- changeSet:
+    id: 1750705167068-8
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: saving_id
+        baseTableName: files_savings
+        constraintName: FK4c4f8gickv6ml6whsa314vqkf
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: savings
+        validate: true
+- changeSet:
+    id: 1750705167068-9
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: file_id
+        baseTableName: files_budgets
+        constraintName: FKcb9dg1fd6bo198l5bb14sibnc
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: files
+        validate: true
+- changeSet:
+    id: 1750705167068-10
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: investment_id
+        baseTableName: files_investments
+        constraintName: FKdxmdce01v26p3qnl7ooavefg0
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: investments
+        validate: true
+- changeSet:
+    id: 1750705167068-11
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: file_id
+        baseTableName: files_savings
+        constraintName: FKfd39tuv1wsn1cw3g73gdks557
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: files
+        validate: true
+- changeSet:
+    id: 1750705167068-12
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: file_id
+        baseTableName: files_transactions
+        constraintName: FKhte0vcu6yybyp9vorcrk2t9cg
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: files
+        validate: true
+- changeSet:
+    id: 1750705167068-13
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: bill_reminder_id
+        baseTableName: files_bill_reminders
+        constraintName: FKn0i8uly7kc5adxyeaad4ojk4u
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: bill_reminders
+        validate: true
+- changeSet:
+    id: 1750705167068-14
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: file_id
+        baseTableName: files_bill_reminders
+        constraintName: FKr57gx7laurgsi6kxmx7x02viw
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: files
+        validate: true
+- changeSet:
+    id: 1750705167068-15
+    author: nedim.buro (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: transaction_id
+        baseTableName: files_transactions
+        constraintName: FKsb9km2ut2t6930skutq1cwrw7
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: transactions
+        validate: true
+- changeSet:
+    id: 1750705167068-21
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: billReminder_id
+        tableName: files
+- changeSet:
+    id: 1750705167068-22
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: budget_id
+        tableName: files
+- changeSet:
+    id: 1750705167068-23
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: investment_id
+        tableName: files
+- changeSet:
+    id: 1750705167068-24
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: saving_id
+        tableName: files
+- changeSet:
+    id: 1750705167068-25
+    author: nedim.buro (generated)
+    changes:
+    - dropColumn:
+        columnName: transaction_id
+        tableName: files
+
