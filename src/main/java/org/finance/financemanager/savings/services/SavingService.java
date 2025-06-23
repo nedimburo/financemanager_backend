@@ -18,6 +18,7 @@ import org.finance.financemanager.savings.mappers.SavingMapper;
 import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
+import org.finance.financemanager.savings.payloads.SavingSpecificResponseDto;
 import org.finance.financemanager.savings.repositories.SavingRepository;
 import org.finance.financemanager.savings.specifications.SavingSpecification;
 import org.springframework.data.domain.Page;
@@ -72,7 +73,7 @@ public class SavingService {
     }
 
     @Transactional
-    public SavingResponseDto getSavingById(String savingId) {
+    public SavingSpecificResponseDto getSavingById(String savingId) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -101,7 +102,7 @@ public class SavingService {
         }
 
         try {
-            return savingMapper.toDto(saving);
+            return savingMapper.toSpecificDto(saving);
         } catch (Exception e){
             throw new RuntimeException("Error getting saving by id: " + savingId, e);
         }

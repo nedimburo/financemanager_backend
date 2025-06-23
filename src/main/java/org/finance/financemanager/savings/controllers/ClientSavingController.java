@@ -12,6 +12,7 @@ import org.finance.financemanager.savings.entities.SavingOrderBy;
 import org.finance.financemanager.savings.payloads.SavingAmountResponseDto;
 import org.finance.financemanager.savings.payloads.SavingRequestDto;
 import org.finance.financemanager.savings.payloads.SavingResponseDto;
+import org.finance.financemanager.savings.payloads.SavingSpecificResponseDto;
 import org.finance.financemanager.savings.services.SavingService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,7 +54,7 @@ public class ClientSavingController {
             description = "Get details for a specific saving made by a user by providing a saving ID."
     )
     @GetMapping("/specific")
-    public SavingResponseDto getSavingById(@RequestParam String savingId) {
+    public SavingSpecificResponseDto getSavingById(@RequestParam String savingId) {
         return service.getSavingById(savingId);
     }
 

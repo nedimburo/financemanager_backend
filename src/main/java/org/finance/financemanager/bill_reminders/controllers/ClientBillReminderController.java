@@ -10,6 +10,7 @@ import org.finance.financemanager.bill_reminders.entities.BillReminderOrderBy;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderSpecificResponseDto;
 import org.finance.financemanager.bill_reminders.services.BillReminderService;
 import org.finance.financemanager.common.payloads.ListResponseDto;
 import org.finance.financemanager.common.payloads.SuccessResponseDto;
@@ -51,7 +52,7 @@ public class ClientBillReminderController {
             description = "Get details for a specific bill reminder made by a user by providing a bill reminder ID."
     )
     @GetMapping("/specific")
-    public BillReminderResponseDto getBillReminderById(@RequestParam String billReminderId) {
+    public BillReminderSpecificResponseDto getBillReminderById(@RequestParam String billReminderId) {
         return service.getBillReminderById(billReminderId);
     }
 

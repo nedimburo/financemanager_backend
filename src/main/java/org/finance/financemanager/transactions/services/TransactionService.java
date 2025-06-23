@@ -23,6 +23,7 @@ import org.finance.financemanager.transactions.mappers.TransactionMapper;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
+import org.finance.financemanager.transactions.payloads.TransactionSpecificResponseDto;
 import org.finance.financemanager.transactions.repositories.TransactionRepository;
 import org.finance.financemanager.transactions.specifications.TransactionSpecification;
 import org.springframework.data.domain.Page;
@@ -87,7 +88,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponseDto getTransactionById(String transactionId) {
+    public TransactionSpecificResponseDto getTransactionById(String transactionId) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -116,7 +117,7 @@ public class TransactionService {
         }
 
         try {
-            return transactionMapper.toDto(transaction);
+            return transactionMapper.toSpecificDto(transaction);
         } catch (Exception e){
             throw new RuntimeException("Error getting transaction by id: " + transactionId, e);
         }

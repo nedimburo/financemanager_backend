@@ -72,7 +72,7 @@ public class InvestmentService {
     }
 
     @Transactional
-    public InvestmentResponseDto getInvestmentById(String investmentId) {
+    public InvestmentSpecificResponseDto getInvestmentById(String investmentId) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -101,7 +101,7 @@ public class InvestmentService {
         }
 
         try {
-            return investmentMapper.toDto(investment);
+            return investmentMapper.toSpecificDto(investment);
         } catch (Exception e){
             throw new RuntimeException("Error getting investment by id: " + investmentId, e);
         }

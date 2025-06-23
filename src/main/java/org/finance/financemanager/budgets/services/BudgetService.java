@@ -11,6 +11,7 @@ import org.finance.financemanager.budgets.entities.BudgetEntity;
 import org.finance.financemanager.budgets.mappers.BudgetMapper;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
+import org.finance.financemanager.budgets.payloads.BudgetSpecificResponseDto;
 import org.finance.financemanager.budgets.repositories.BudgetRepository;
 import org.finance.financemanager.budgets.specifications.BudgetSpecification;
 import org.finance.financemanager.common.config.Auth;
@@ -71,7 +72,7 @@ public class BudgetService {
     }
 
     @Transactional
-    public BudgetResponseDto getBudgetById(String budgetId) {
+    public BudgetSpecificResponseDto getBudgetById(String budgetId) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -100,7 +101,7 @@ public class BudgetService {
         }
 
         try {
-            return budgetMapper.toDto(budget);
+            return budgetMapper.toSpecificDto(budget);
         } catch (Exception e){
             throw new RuntimeException("Error getting budget by id: " + budgetId, e);
         }

@@ -6,12 +6,15 @@ import lombok.Setter;
 import lombok.ToString;
 import org.finance.financemanager.accessibility.users.entities.UserEntity;
 import org.finance.financemanager.common.entities.Auditable;
+import org.finance.financemanager.files.entities.FileEntity;
 import org.finance.financemanager.investments.Investment;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -48,4 +51,12 @@ public class InvestmentEntity extends Auditable {
 
     @Column(name = "start_date")
     private LocalDateTime startDate;
+
+    @ManyToMany
+    @JoinTable(
+            name = "files_investments",
+            joinColumns = @JoinColumn(name = "investment_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<FileEntity> files;
 }
