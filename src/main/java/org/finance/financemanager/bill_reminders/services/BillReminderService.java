@@ -12,6 +12,7 @@ import org.finance.financemanager.bill_reminders.mappers.BillReminderMapper;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderPayResponse;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderRequestDto;
 import org.finance.financemanager.bill_reminders.payloads.BillReminderResponseDto;
+import org.finance.financemanager.bill_reminders.payloads.BillReminderSpecificResponseDto;
 import org.finance.financemanager.bill_reminders.repositories.BillReminderRepository;
 import org.finance.financemanager.bill_reminders.specifications.BillReminderSpecification;
 import org.finance.financemanager.common.config.Auth;
@@ -73,7 +74,7 @@ public class BillReminderService {
     }
 
     @Transactional
-    public BillReminderResponseDto getBillReminderById(String billReminderId) {
+    public BillReminderSpecificResponseDto getBillReminderById(String billReminderId) {
         String userId;
         try {
             userId = Auth.getUserId();
@@ -102,7 +103,7 @@ public class BillReminderService {
         }
 
         try {
-            return billReminderMapper.toDto(billReminder);
+            return billReminderMapper.toSpecificDto(billReminder);
         } catch (Exception e){
             throw new RuntimeException("Error getting bill reminder by id: " + billReminderId + " " + e.getMessage());
         }

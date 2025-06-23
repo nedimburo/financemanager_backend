@@ -33,6 +33,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -109,9 +110,24 @@ public class StorageService {
                 .build();
     }
 
-    public ResponseEntity<byte[]> downloadFile(String filePath) {
+    public ResponseEntity<byte[]> downloadFile(String fileId) {
+        UUID fileUuid;
+
+        try {
+            fileUuid = UUID.fromString(fileId);
+        } catch (Exception e) {
+            throw new BadRequestException("Error while converting file id to UUID.");
+        }
+
+        FileEntity fileForDownload;
+        try {
+            fileForDownload = fileService.getFile(fileUuid);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("File not found in the database.");
+        }
+
         byte[] downloadedFile = webClient.get()
-                .uri(supabaseUrl + "/storage/v1/object/" + bucket + "/" + filePath)
+                .uri(fileForDownload.getUrl())
                 .header("apikey", supabaseKey)
                 .header("Authorization", "Bearer " + supabaseKey)
                 .retrieve()
@@ -124,7 +140,7 @@ public class StorageService {
         return new ResponseEntity<>(downloadedFile, headers, HttpStatus.OK);
     }
 
-    public SuccessResponseDto deleteFile(String fileId) {
+    public SuccessResponseDto deleteFile(String fileId, FinanceTypes financialType, String itemId) {
         UUID fileUuid;
 
         try {
@@ -133,11 +149,53 @@ public class StorageService {
             throw new BadRequestException("Error while converting file id to UUID.");
         }
 
+        UUID itemUuid;
+
+        try {
+            itemUuid = UUID.fromString(itemId);
+        } catch (Exception e) {
+            throw new BadRequestException("Error while converting item id to UUID.");
+        }
+
         FileEntity fileForDelete;
         try {
             fileForDelete = fileService.getFile(fileUuid);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("File not found in the database.");
+        }
+
+        switch (financialType) {
+            case INVESTMENTS -> {
+                InvestmentEntity investment = investmentRepository.findById(itemUuid)
+                        .orElseThrow(() -> new ResourceNotFoundException("Investment not found."));
+                investment.getFiles().remove(fileForDelete);
+                investmentRepository.save(investment);
+            }
+            case TRANSACTIONS -> {
+                TransactionEntity transaction = transactionRepository.findById(itemUuid)
+                        .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
+                transaction.getFiles().remove(fileForDelete);
+                transactionRepository.save(transaction);
+            }
+            case BILL_REMINDERS -> {
+                BillReminderEntity billReminder = billReminderRepository.findById(itemUuid)
+                        .orElseThrow(() -> new ResourceNotFoundException("Bill reminder not found"));
+                billReminder.getFiles().remove(fileForDelete);
+                billReminderRepository.save(billReminder);
+            }
+            case SAVINGS -> {
+                SavingEntity saving = savingRepository.findById(itemUuid)
+                        .orElseThrow(() -> new ResourceNotFoundException("Saving not found"));
+                saving.getFiles().remove(fileForDelete);
+                savingRepository.save(saving);
+            }
+            case BUDGETS -> {
+                BudgetEntity budget = budgetRepository.findById(itemUuid)
+                        .orElseThrow(() -> new ResourceNotFoundException("Budget not found"));
+                budget.getFiles().remove(fileForDelete);
+                budgetRepository.save(budget);
+            }
+            default -> throw new IllegalArgumentException("Invalid financial type");
         }
 
         deleteFileFromSupabase(fileForDelete.getUrl());
@@ -248,12 +306,21 @@ public class StorageService {
     }
 
     public void deleteFileFromSupabase(String fileUrl) {
+        String storagePath = extractStoragePath(fileUrl);
+
         webClient.delete()
-                .uri(fileUrl)
+                .uri(supabaseUrl + "/storage/v1/object/" + bucket + "/" + storagePath)
                 .header("apikey", supabaseKey)
                 .header("Authorization", "Bearer " + supabaseKey)
                 .retrieve()
                 .toBodilessEntity()
                 .block();
+    }
+
+    public String extractStoragePath(String fileUrl) {
+        URI uri = URI.create(fileUrl);
+        String fullPath = uri.getPath();
+        String prefix = "/storage/v1/object/public/" + bucket + "/";
+        return fullPath.substring(fullPath.indexOf(prefix) + prefix.length());
     }
 }

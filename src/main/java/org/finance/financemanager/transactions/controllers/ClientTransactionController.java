@@ -14,6 +14,7 @@ import org.finance.financemanager.transactions.entities.TransactionType;
 import org.finance.financemanager.transactions.payloads.ExpenseIncomeResponseDto;
 import org.finance.financemanager.transactions.payloads.TransactionRequestDto;
 import org.finance.financemanager.transactions.payloads.TransactionResponseDto;
+import org.finance.financemanager.transactions.payloads.TransactionSpecificResponseDto;
 import org.finance.financemanager.transactions.services.TransactionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,7 +61,7 @@ public class ClientTransactionController {
             description = "Get details for a specific transaction made by a user by providing a transaction ID."
     )
     @GetMapping("/specific")
-    public TransactionResponseDto getTransactionById(@RequestParam String transactionId) {
+    public TransactionSpecificResponseDto getTransactionById(@RequestParam String transactionId) {
         return service.getTransactionById(transactionId);
     }
 

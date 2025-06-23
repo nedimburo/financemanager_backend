@@ -51,7 +51,7 @@ public class ClientInvestmentController {
             description = "Get details for a specific investment made by a user by providing a investment ID."
     )
     @GetMapping("/specific")
-    public InvestmentResponseDto getInvestmentById(@RequestParam String investmentId) {
+    public InvestmentSpecificResponseDto getInvestmentById(@RequestParam String investmentId) {
         return service.getInvestmentById(investmentId);
     }
 

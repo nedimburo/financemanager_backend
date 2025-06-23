@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.finance.financemanager.budgets.entities.BudgetOrderBy;
 import org.finance.financemanager.budgets.payloads.BudgetRequestDto;
 import org.finance.financemanager.budgets.payloads.BudgetResponseDto;
+import org.finance.financemanager.budgets.payloads.BudgetSpecificResponseDto;
 import org.finance.financemanager.budgets.services.BudgetService;
 import org.finance.financemanager.common.enums.FinanceCategory;
 import org.finance.financemanager.common.payloads.ListResponseDto;
@@ -52,7 +53,7 @@ public class ClientBudgetController {
             description = "Get details for a specific budget made by a user by providing a budget ID."
     )
     @GetMapping("/specific")
-    public BudgetResponseDto getBudgetById(@RequestParam String budgetId) {
+    public BudgetSpecificResponseDto getBudgetById(@RequestParam String budgetId) {
         return service.getBudgetById(budgetId);
     }
 

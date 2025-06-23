@@ -43,16 +43,20 @@ public class CommonStorageController {
             description = "Endpoint used for downloading user uploaded files."
     )
     @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadFile(@RequestParam String filePath) {
-        return service.downloadFile(filePath);
+    public ResponseEntity<byte[]> downloadFile(@RequestParam String fileId) {
+        return service.downloadFile(fileId);
     }
 
     @Operation(
             description = "Delete a specific file by providing file ID."
     )
     @DeleteMapping("/specific")
-    public SuccessResponseDto deleteFile(@RequestParam String fileId) {
-        return service.deleteFile(fileId);
+    public SuccessResponseDto deleteFile(
+            @RequestParam String fileId,
+            @RequestParam FinanceTypes financialType,
+            @RequestParam String itemId
+    ) {
+        return service.deleteFile(fileId, financialType, itemId);
     }
 
     @Operation(
